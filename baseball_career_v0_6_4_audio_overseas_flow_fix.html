@@ -1,0 +1,2047 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes,viewport-fit=cover">
+<title>台灣職棒球員人生模擬器 v0.6.4</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;overflow-x:hidden;background:#0f172a;color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
+main{max-width:920px;margin:auto;padding:calc(14px + env(safe-area-inset-top,0px)) calc(14px + env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px))}
+@supports(padding:max(0px)){main{padding-top:max(14px,calc(env(safe-area-inset-top) + 12px));padding-right:max(14px,env(safe-area-inset-right));padding-bottom:max(18px,calc(env(safe-area-inset-bottom) + 12px));padding-left:max(14px,env(safe-area-inset-left))}}
+h1{font-size:clamp(24px,6vw,38px);line-height:1.15;margin:8px 0 14px}
+.panel{background:#1e293b;border:1px solid #334155;border-radius:16px;margin:12px 0;overflow:hidden}
+.panel>summary{cursor:pointer;list-style:none;padding:16px 18px;font-size:clamp(20px,5vw,28px);font-weight:800;display:flex;align-items:center;justify-content:space-between;gap:10px;user-select:none}
+.panel>summary::-webkit-details-marker{display:none}
+.panel>summary::after{content:'▾';color:#94a3b8;font-size:.8em;transition:transform .15s ease}
+.panel:not([open])>summary::after{transform:rotate(-90deg)}
+.panel-body{padding:0 18px 18px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:16px;margin:12px 0}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.hidden{display:none!important}
+label{display:block;color:#cbd5e1}
+input,select{width:100%;margin-top:6px;padding:11px;border-radius:9px;border:1px solid #475569;background:#0f172a;color:white;font-size:16px}
+button{border:0;border-radius:11px;padding:13px 15px;margin:5px 4px 5px 0;background:#2563eb;color:white;font-weight:800;font-size:16px;min-height:46px;touch-action:manipulation}
+button.alt{background:#475569}button:disabled{opacity:.4}
+.stat{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid #334155;padding:8px 0;align-items:baseline}
+.stat span{min-width:0;overflow-wrap:anywhere}.stat b{flex:0 0 auto}
+.ok{color:#4ade80}.bad{color:#fb7185}.muted{color:#94a3b8}.big{font-size:clamp(22px,6vw,34px);font-weight:900}.small{font-size:14px}.badge{display:inline-block;padding:4px 9px;border-radius:999px;background:#334155;margin:2px 4px 2px 0;font-size:13px;font-weight:800}.theme-brothers body{background:#101827}.theme-brothers button{background:#eab308;color:#111827}.theme-brothers .panel,.theme-brothers .card{border-color:#eab308}.theme-brothers h1{color:#fde047}.theme-lamiko body{background:#082f49}.theme-lamiko button{background:#38bdf8;color:#082f49}.theme-lamiko .panel,.theme-lamiko .card{border-color:#7dd3fc}.theme-lamiko h1{color:#bae6fd}
+.theme-knights body{background:#071a3d}.theme-knights button{background:#2563eb}.theme-knights .panel,.theme-knights .card{border-color:#60a5fa}.theme-knights h1{color:#bfdbfe}
+.theme-dragons body{background:#24070b}.theme-dragons button{background:#dc2626}.theme-dragons .panel,.theme-dragons .card{border-color:#ef4444}.theme-dragons h1{color:#fecaca}
+.theme-lions-green body{background:#063b2c}.theme-lions-green button{background:#f97316;color:white}.theme-lions-green .panel,.theme-lions-green .card{border-color:#f97316}.theme-lions-green h1{color:#fff7ed}.theme-lions-green summary{color:white}.theme-lions-green .badge{background:#f97316;color:white}
+.theme-lions-orange body{background:#431407}.theme-lions-orange button{background:#f97316}.theme-lions-orange .panel,.theme-lions-orange .card{border-color:#fb923c}.theme-lions-orange h1{color:#ffedd5}
+.theme-eagles body{background:#052e22}.theme-eagles button{background:#15803d}.theme-eagles .panel,.theme-eagles .card{border-color:#4ade80}.theme-eagles h1{color:#dcfce7}
+.tip-target{cursor:help;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+#longPressTip{position:fixed;left:14px;right:14px;bottom:max(18px,env(safe-area-inset-bottom));z-index:9999;background:#020617;border:1px solid #64748b;border-radius:14px;padding:14px 16px;box-shadow:0 12px 40px rgba(0,0,0,.45);line-height:1.55}
+#longPressTip b{display:block;margin-bottom:4px;font-size:18px}
+.award-section-title{font-size:13px;color:#94a3b8;font-weight:800;margin:14px 0 6px}
+.award-count-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid #334155}
+.award-count-row .award-name{min-width:0;overflow-wrap:anywhere}
+.award-year-card{border:1px solid #334155;border-radius:12px;padding:12px;margin:10px 0;background:#162033}
+.award-year-label{font-size:19px;font-weight:900;margin-bottom:9px}
+.award-chip-wrap{display:flex;flex-wrap:wrap;gap:7px}
+.award-chip{display:inline-flex;max-width:100%;align-items:center;padding:7px 10px;border-radius:999px;background:#0f172a;border:1px solid #475569;font-weight:800;line-height:1.3;overflow-wrap:anywhere}
+#careerAwards{min-width:0;overflow:hidden}
+#careerSummary .card{max-width:100%;overflow:hidden}
+.log{white-space:pre-wrap;background:#020617;border-radius:10px;padding:12px;max-height:320px;overflow:auto;line-height:1.5}.button-grid{display:flex;flex-wrap:wrap;gap:4px}.hr{height:1px;background:#334155;margin:12px 0}
+@media(max-width:520px){main{padding:10px}.panel>summary{padding:14px}.panel-body{padding:0 14px 14px}.row{grid-template-columns:1fr 1fr}.button-grid button{flex:1 1 calc(50% - 8px)}.wide-mobile{grid-column:1/-1}}
+
+.game-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:22px 4px 8px;padding-top:10px;border-top:1px solid #334155;color:#64748b;font-size:11px;line-height:1.3}
+.game-footer .author{font-weight:600;letter-spacing:.02em}
+.game-footer .version{font-size:10px;white-space:nowrap}
+.corgi-easter{display:inline-block;margin-left:7px;font-size:17px;line-height:1;vertical-align:-2px;image-rendering:pixelated;filter:contrast(1.08)}
+
+.sound-toggle{position:fixed;top:12px;right:12px;z-index:9999;width:44px;height:44px;border-radius:50%;border:1px solid #52627a;background:#1d2a3d;color:#fff;font-size:20px;padding:0;box-shadow:0 3px 12px #0005}
+
+.career-share-card{position:relative}
+.career-share-card.legend-summary:before{content:"LEGEND";position:absolute;right:14px;top:12px;font-size:11px;font-weight:900;letter-spacing:.16em;opacity:.8}
+.theme-knights #careerSummaryCard{border-color:#38bdf8!important}
+.theme-dragons #careerSummaryCard{border-color:#ef4444!important}
+.theme-lamiko #careerSummaryCard{border-color:#7dd3fc!important}
+.theme-brothers #careerSummaryCard{border-color:#facc15!important}
+.theme-lions-green #careerSummaryCard{border-color:#f97316!important}
+.theme-lions-orange #careerSummaryCard{border-color:#fb923c!important}
+.theme-eagles #careerSummaryCard{border-color:#4ade80!important}
+.legend-career-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.legend-career-badge{display:inline-flex;padding:5px 9px;border-radius:999px;border:1px solid currentColor;font-size:12px;font-weight:900}
+
+/* 旅外彩蛋：只改外框顏色，不改球隊、背景或按鈕 */
+.overseas-fighters .panel,.overseas-fighters .card{border-color:#2f80c9!important}
+.overseas-rakutenjp .panel,.overseas-rakutenjp .card{border-color:#8b1e3f!important}
+.overseas-seibulions .panel,.overseas-seibulions .card{border-color:#1d4f91!important}
+.overseas-redsox .panel,.overseas-redsox .card{border-color:#bd3039!important}
+.overseas-tigers .panel,.overseas-tigers .card{border-color:#f26722!important}
+.overseas-yankees .panel,.overseas-yankees .card{border-color:#28406b!important}
+.overseas-orioles .panel,.overseas-orioles .card{border-color:#df4601!important}
+
+/* v0.6.4 球員資訊：手機版縮字與整齊排版 */
+#playerInfoGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+#playerInfoGrid>div{min-width:0}
+#playerInfoGrid .muted{font-size:13px}
+#playerInfoGrid .big{font-size:clamp(17px,4.7vw,23px);line-height:1.28;overflow-wrap:anywhere}
+@media(max-width:390px){#playerInfoGrid{gap:12px 14px}#playerInfoGrid .big{font-size:18px}}
+.retirement-notice{border:2px solid #fb7185!important}
+.hof-box{border:1px solid #f59e0b;border-radius:14px;padding:14px;margin-top:14px;background:#162033}
+.advanced-table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
+.advanced-table th,.advanced-table td{padding:8px 7px;border-bottom:1px solid #334155;text-align:right}
+.advanced-table th:first-child,.advanced-table td:first-child{text-align:left}
+.advanced-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.story-card{border-left:3px solid #f59e0b;padding:12px 14px;background:#162033;border-radius:10px;line-height:1.7}
+</style>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="棒球生涯">
+<meta name="theme-color" content="#0f172a">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+</head>
+<body>
+<button id="soundToggle" class="sound-toggle" type="button" aria-label="切換音效">🔊</button>
+
+<main>
+<h1>⚾ 台灣職棒球員人生模擬器</h1>
+<div id="jsWarning" class="card"><b class="bad">啟動檢查：</b>如果這行一直顯示，代表瀏覽器沒有執行 JavaScript。</div>
+<div id="jsReady" class="card hidden"><b class="ok">✓ 遊戲引擎已載入</b></div>
+<div id="errorBox" class="card hidden"><b class="bad">錯誤：</b><span id="errorText"></span></div>
+
+<details id="setup" class="panel" open>
+<summary>建立球員</summary>
+<div class="panel-body">
+<div class="row">
+<label>姓名<input id="name" value="Leo Tsai"></label>
+<label>背號<input id="jersey" type="number" min="0" max="99" inputmode="numeric" value="18"></label>
+<label>球員類型<select id="playerType" onchange="toggleSetup()"><option value="pitcher">投手</option><option value="hitter">野手</option></select></label>
+<label id="pitchHandWrap">投球慣用手<select id="hand"><option value="右投">右投</option><option value="左投">左投</option></select></label>
+<label id="pitchArchWrap" class="wide-mobile">投手原型<select id="archetype"><option value="power">火球型</option><option value="control">控球型</option><option value="breaking">變化球型</option><option value="workhorse">工作馬型</option></select></label><label id="pitchRoleWrap" class="wide-mobile">生涯定位<select id="pitchRolePref">
+<option value="starter">先發投手｜優先安排進先發輪值</option>
+<option value="reliever">牛棚投手｜優先擔任中繼／後援</option>
+<option value="auto">聽天由命｜依體力與整體能力判定</option>
+</select></label>
+<label id="fieldPosWrap" class="hidden">守備類型<select id="fieldType" onchange="toggleFieldSubtype()">
+<option value="catcher">捕手</option>
+<option value="infielder">內野手</option>
+<option value="outfielder">外野手</option>
+</select></label>
+<label id="fieldSubtypeWrap" class="hidden wide-mobile">守備定位<select id="fieldSubtype"></select></label>
+<label id="batSideWrap" class="hidden">打擊慣用側<select id="batSide"><option>右打</option><option>左打</option></select></label>
+<label id="hitArchWrap" class="hidden wide-mobile">野手原型<select id="hitArchetype"><option value="contact">巧打型</option><option value="power">重砲型</option><option value="defense">守備型</option><option value="speed">速度型</option><option value="balanced">均衡型</option></select></label>
+<label class="wide-mobile">初始技能<select id="startSkill">
+<option value="ironman">鐵人｜疲勞累積 -5%，疲勞60%以上才可能受傷</option>
+<option value="genius">天才｜訓練成長加倍</option>
+<option value="playoff">季後賽型球員｜例行賽 -10%，季後賽 +20%</option>
+<option value="clutch">大心臟｜關鍵時刻成功率提升</option>
+<option value="workhorse">工作馬｜投手體力與恢復較佳；野手出賽穩定</option>
+<option value="fastlearn">快速學習｜訓練成功率提高，但單次成長不加倍</option>
+<option value="powergift">力量天賦｜野手力量成長較快；投手球威成長較快</option>
+<option value="commandgift">精準天賦｜選球／控球成長較快</option>
+<option value="defensegift">守備職人｜守備類能力成長較快</option>
+<option value="speedgift">速度之星｜速度、敏捷與跑壘相關能力成長較快</option>
+<option value="latebloomer">大器晚成｜25歲後自然成長機率提高</option>
+</select></label>
+</div>
+<button type="button" onclick="startGame();return false;">開始生涯</button>
+</div>
+</details>
+
+<section id="game" class="hidden">
+<details class="panel" open><summary>球員資訊</summary><div class="panel-body"><div id="playerInfoGrid" class="row"><div><span class="muted">球員</span><div id="pName" class="big"></div></div><div><span class="muted">背號</span><div id="pJersey" class="big"></div></div><div><span class="muted">球隊</span><div id="pTeam" class="big"></div></div><div><span class="muted">所屬聯盟</span><div id="pLeague" class="big"></div></div><div><span class="muted">合約</span><div id="contractStatus" class="big"></div></div><div><span class="muted">年齡 / 年份</span><div id="pAgeYear" class="big"></div></div><div><span class="muted">角色</span><div id="role" class="big"></div></div><div><span class="muted">生涯階段</span><div id="careerPhase" class="big"></div></div><div><span class="muted">球團評價</span><div id="clubEval" class="big"></div></div><div><span class="muted">初始技能</span><div id="skillName" class="big"></div></div></div></div></details>
+<details class="panel" open><summary>基礎能力</summary><div class="panel-body"><div id="achievementBadges" style="margin-bottom:10px"></div><div id="baseStats"></div><div style="height:1px;background:#334155;margin:16px 0"></div><div class="muted" style="font-weight:800;margin-bottom:8px">球種能力</div><div id="pitchStats"></div></div></details>
+<details class="panel" open><summary>季後賽</summary><div class="panel-body"><div id="postseason" class="muted">例行賽尚未結束。</div><div class="hr"></div><div class="muted" style="font-weight:800;margin-bottom:8px">季後賽個人成績</div><div id="postseasonStats" class="muted">尚無季後賽出賽。</div></div></details>
+
+<details class="panel" open><summary>生涯 / 新聞紀錄</summary><div class="panel-body">
+<div id="seasonTraining" class="card hidden">
+  <div class="big" style="font-size:clamp(20px,5vw,28px)">📋 季初訓練</div>
+  <div class="muted" style="margin:6px 0 10px">本季有 <b id="tp" class="ok">6</b> 點訓練點。點滿 6 點後會立即結算，本區塊會消失並轉成生涯敘事。</div>
+  <div id="trainingButtons" class="button-grid"></div>
+  <div id="trainingPlan" class="small muted" style="margin-top:8px"></div>
+</div>
+<div id="seasonSim" class="card hidden">
+  <div class="big" style="font-size:clamp(20px,5vw,28px)">⚾ 球季進行</div>
+  <div class="row" style="margin-top:10px">
+    <div><span class="muted">球隊戰績</span><div id="record" class="big"></div></div>
+    <div><span class="muted">個人成績</span><div id="seasonLine"></div></div>
+    <div><span class="muted">疲勞</span><div id="fatigue" class="big"></div></div>
+    <div><span class="muted">健康狀態</span><div id="health" class="big"></div></div>
+  </div>
+  <div class="button-grid" style="margin-top:10px">
+    <button id="sim1Btn" onclick="simulateGames(1)">模擬 1 場</button>
+    <button id="sim5Btn" onclick="simulateGames(5)">模擬 5 場</button>
+    <button id="sim20Btn" onclick="simulateGames(20)">模擬約 1 個月</button>
+    <button id="restBtn" class="alt" onclick="restWeek()">休息一週</button>
+  </div>
+  <div class="small muted" style="margin-top:8px">季初訓練完成後才會顯示；球季結束後會收起，只保留生涯敘事。</div>
+</div>
+<div id="clutch" class="card hidden" style="border:2px solid #f59e0b">
+  <div class="big" style="font-size:clamp(20px,5vw,28px)">🔥 CLUTCH MOMENT｜關鍵時刻</div>
+  <div id="clutchText"></div>
+  <div id="clutchButtons" class="button-grid" style="margin-top:10px"></div>
+  <div class="small muted" style="margin-top:8px">必須完成這次關鍵選擇後，才能繼續模擬球季。</div>
+</div>
+<div id="seasonDecision" class="card hidden" style="border:2px solid #60a5fa">
+  <div class="big" style="font-size:clamp(20px,5vw,28px)">🌙 球季結束</div>
+  <div class="muted" style="margin:8px 0 12px">漫長的球季已經結束。整理完置物櫃後，你必須決定下一步。</div>
+  <div class="button-grid">
+    <button onclick="continueCareer()">⚾ 繼續賽季，努力打拼</button>
+    <button class="alt" onclick="retireCareer()">🧢 收起球具，選擇退役</button>
+  </div>
+</div>
+
+
+<div id="offseasonChoice" class="card hidden" style="border:2px solid #a78bfa">
+  <div class="big" style="font-size:clamp(20px,5vw,28px)">💼 休賽季動向</div>
+  <div id="offseasonChoiceText" style="line-height:1.6;margin:8px 0 12px"></div>
+  <div id="offseasonChoiceButtons" class="button-grid"></div>
+  <div class="small muted" style="margin-top:8px">完成合約／交易決定後才會進入下一季。</div>
+</div>
+<div id="eventChoice" class="card hidden" style="border:2px solid #38bdf8">
+  <div class="big" style="font-size:clamp(20px,5vw,28px)">🎲 賽季事件</div>
+  <div id="eventChoiceText" style="line-height:1.6;margin:8px 0 12px"></div>
+  <div id="eventChoiceButtons" class="button-grid"></div>
+  <div class="small muted" style="margin-top:8px">完成這次選擇後才能繼續模擬。</div>
+</div>
+<div id="log" class="log"></div>
+</div></details>
+</section>
+
+<div id="longPressTip" class="hidden"><b id="tipTitle"></b><div id="tipText"></div></div>
+
+<section id="retirementNotice" class="hidden">
+  <div class="card retirement-notice">
+    <div class="muted">CAREER ENDING</div>
+    <div class="big" style="margin:6px 0 10px">🧢 生涯即將結束</div>
+    <div id="retirementReasonText" style="line-height:1.75"></div>
+    <div class="button-grid" style="margin-top:14px">
+      <button onclick="confirmRetirement()">查看生涯結算</button>
+    </div>
+  </div>
+</section>
+<section id="careerSummary" class="hidden">
+<div id="careerSummaryCard" class="card career-share-card" style="border:2px solid #f59e0b">
+<div class="muted">CAREER COMPLETE</div>
+<div id="careerTitle" class="big" style="margin:6px 0 12px"></div>
+<div id="careerMeta" class="muted"></div>
+<div class="hr"></div>
+<div id="careerStats"></div>
+<div class="hr"></div>
+<div class="big" style="font-size:clamp(18px,4.5vw,24px);margin-bottom:8px">🏆 生涯榮譽</div>
+<div id="careerAwards"></div>
+
+<div class="hr"></div>
+<div class="big" style="font-size:clamp(18px,4.5vw,24px);margin-bottom:8px">🌏 國際賽生涯</div>
+<div id="internationalSummary"></div>
+<div class="hr"></div>
+<div class="big" style="font-size:clamp(18px,4.5vw,24px);margin-bottom:8px">📈 每季進階數據</div>
+<div id="advancedCareerStats" class="advanced-scroll"></div>
+<div class="hr"></div>
+<div class="big" style="font-size:clamp(18px,4.5vw,24px);margin-bottom:8px">🏛️ 名人堂投票</div>
+<div id="hallOfFameResult"></div>
+<div class="hr"></div>
+<div class="big" style="font-size:clamp(18px,4.5vw,24px);margin-bottom:8px">📖 退役之後</div>
+<div id="careerStory" class="story-card"></div>
+<div class="hr"></div>
+<div id="careerQuote" style="line-height:1.7"></div>
+<div class="button-grid" style="margin-top:14px">
+<button onclick="shareCareer()">📤 分享生涯圖片</button>
+<button class="alt" onclick="location.reload()">🔄 建立新球員</button>
+</div>
+</div>
+</section>
+
+<footer class="game-footer"><span class="author">作者：LeoTsai</span><span class="version">v0.6.4</span></footer>
+</main>
+<script>
+
+/* v0.6.4 lightweight Web Audio SFX — no external audio files required */
+var soundEnabled=true,audioCtx=null;
+function audioReady(){
+  if(!soundEnabled)return null;
+  try{
+    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    return audioCtx;
+  }catch(e){return null}
+}
+function tone(freq,dur,type,vol,delay){
+  var c=audioReady();if(!c)return;
+  var o=c.createOscillator(),g=c.createGain(),t=c.currentTime+(delay||0);
+  o.type=type||'sine';o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||0.06,t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+dur+.03);
+}
+function noise(dur,vol,delay){
+  var c=audioReady();if(!c)return;
+  var len=Math.max(1,Math.floor(c.sampleRate*dur)),b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0);
+  for(var i=0;i<len;i++)d[i]=Math.random()*2-1;
+  var s=c.createBufferSource(),g=c.createGain(),t=c.currentTime+(delay||0);
+  s.buffer=b;g.gain.setValueAtTime(vol||.04,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(g);g.connect(c.destination);s.start(t);
+}
+function sfx(name){
+  if(!soundEnabled)return;
+  var c=audioReady();if(!c)return;
+
+  function batCrack(extra){
+    // Sharp wooden bat contact: short transient + body resonance.
+    noise(.018,.22);
+    tone(190,.035,'triangle',.16,.002);
+    tone(320,.028,'square',.07,.006);
+    tone(105,.055,'triangle',.08,.008);
+    if(extra){tone(460,.03,'triangle',.05,.012)}
+  }
+  function crowdCheer(){
+    // Layered filtered-like crowd impression using staggered noise and rising tones.
+    noise(.75,.045,.04);noise(.55,.035,.16);noise(.38,.025,.34);
+    [260,310,370,440,520].forEach(function(f,i){tone(f,.32,'sine',.018,.08+i*.055)});
+  }
+  function crowdBoo(){
+    noise(.65,.035,.02);
+    [170,155,145,135].forEach(function(f,i){tone(f,.34,'sawtooth',.028,.04+i*.07)});
+  }
+  function pitchWhooshAndGlove(){
+    // Fast spinning ball "whoosh", then a compact glove pop.
+    noise(.11,.055,.00);
+    tone(900,.08,'sine',.025,.00);
+    tone(650,.07,'sine',.018,.035);
+    noise(.035,.13,.105);
+    tone(115,.055,'triangle',.13,.108);
+  }
+
+  if(name==='click'){
+    tone(520,.055,'square',.025);
+  }else if(name==='hit'){
+    batCrack(false);
+  }else if(name==='homerun'){
+    batCrack(true);
+    crowdCheer();
+  }else if(name==='hitterStrikeout'){
+    crowdBoo();
+  }else if(name==='pitcherStrikeout'){
+    pitchWhooshAndGlove();
+  }else if(name==='pitcherMistake'){
+    crowdBoo();
+  }else if(name==='clutch'){
+    [90,90,90].forEach(function(f,i){tone(f,.12,'sine',.12,i*.23)});
+  }else if(name==='injury'){
+    [700,520,360].forEach(function(f,i){tone(f,.15,'sawtooth',.045,i*.09)});
+  }else if(name==='award'){
+    [523,659,784,1047].forEach(function(f,i){tone(f,.18,'triangle',.055,i*.07)});
+  }else if(name==='championship'){
+    [392,523,659,784,1047].forEach(function(f,i){tone(f,.25,'square',.05,i*.09)});
+    crowdCheer();
+  }
+}
+var audioUnlocked=false;
+function unlockAudio(){
+  if(!soundEnabled)return;
+  var c=audioReady();if(!c)return;
+  try{
+    var b=c.createBuffer(1,1,22050),s=c.createBufferSource();
+    s.buffer=b;s.connect(c.destination);s.start(0);
+    if(c.state==='suspended')c.resume();
+    audioUnlocked=true;
+  }catch(e){}
+}
+function audioUserGesture(e){
+  unlockAudio();
+  var target=e&&e.target;
+  if(target && (target.tagName==='BUTTON'||(target.closest&&target.closest('button'))))sfx('click');
+}
+document.addEventListener('pointerdown',audioUserGesture,{passive:true});
+document.addEventListener('touchstart',unlockAudio,{passive:true});
+document.addEventListener('click',function(){if(!audioUnlocked)unlockAudio()},{passive:true});
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible'&&soundEnabled&&audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+});
+document.addEventListener('DOMContentLoaded',function(){
+  var b=document.getElementById('soundToggle');if(!b)return;
+  b.onclick=function(e){
+    e.stopPropagation();soundEnabled=!soundEnabled;b.textContent=soundEnabled?'🔊':'🔇';
+    if(soundEnabled){unlockAudio();setTimeout(function(){sfx('award')},20)}
+  };
+});
+
+
+(function(){
+var teams=[
+{name:'臺北騎士',strength:54},{name:'新北紅龍',strength:53},{name:'桃園猴子',strength:53},{name:'臺中大象',strength:54},{name:'高雄老鷹',strength:51},{name:'臺南獅子',strength:53}
+];
+var mlbTeams=[
+'紐約羊雞','波士頓紅褲','巴爾的摩金鷹','坦帕灣光亮','多倫多藍烏',
+'克里夫蘭守備者','底特律虎王','芝加哥白褲','明尼蘇達雙市','堪薩斯市皇室',
+'休士頓大空入','西雅圖水俠','德州遊擊隊','洛杉磯大使','運動員',
+'洛杉磯道基','聖地牙哥傳教士','舊金山巨入','亞利桑那眼鏡蛇','科羅拉多洛基',
+'芝加哥大熊','密爾瓦基釀酒入','聖路易紅鳥','辛辛那提紅入','匹茲堡海賊',
+'費城費城市民','紐約大城市','亞特蘭大鬥士','邁阿密旗魚','華盛頓公民'
+];
+var npbTeams=[
+'阪神老虎','橫濱 DeNA 海灣之夜','讀賣巨入','中日隆','廣島東洋錦鯉','東京養樂少麻雀',
+'福岡硬金鶯','北海道日本火腿勇士','歐力士蠻牛','東北樂天銀鳩','埼玉東武獅','千葉羅德之海'
+];
+
+var state=null;
+function el(id){return document.getElementById(id)}
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function clamp(v,a,b){if(a===undefined)a=0;if(b===undefined)b=100;return Math.max(a,Math.min(b,v))}
+function label(k){var m={control:'控球',movement:'變化',stuff:'球威',stamina:'體力',durability:'韌性',defense:'守備',veloMax:'球速',contact:'打擊',power:'力量',discipline:'選球',speed:'速度',agility:'守備敏捷',range:'守備範圍',catching:'接球',throwing:'傳球',arm:'臂力',calling:'配球'};return m[k]||k}
+function safe(fn){try{fn()}catch(err){el('errorText').textContent=String(err&&err.message?err.message:err);el('errorBox').className='card'}}
+function archetypeStats(type){var b={control:55,movement:55,stuff:60,stamina:60,durability:60,defense:50,veloMax:149};if(type==='power'){b.control=50;b.movement=55;b.stuff=76;b.stamina=64;b.veloMax=153}else if(type==='control'){b.control=74;b.movement=60;b.stuff=58;b.stamina=64;b.veloMax=147}else if(type==='breaking'){b.control=60;b.movement=76;b.stuff=62;b.stamina=62;b.durability=60;b.veloMax=148}else if(type==='workhorse'){b.control=62;b.movement=58;b.stuff=61;b.stamina=80;b.durability=80;b.veloMax=148}return b}
+function randomizeInitialAttrs(attrs,playerType){
+  // 同樣的選項也會長成不同球員：先抽整體天賦，再讓各能力有個別波動。
+  var talent=rnd(-3,3);
+  for(var k in attrs){
+    if(typeof attrs[k]!=='number')continue;
+    if(k==='calling'&&attrs[k]===0)continue;
+    if(k==='veloMax'){
+      attrs[k]=Math.max(125,Math.min(165,attrs[k]+rnd(-3,3)+Math.round(talent/2)));
+    }else{
+      attrs[k]=clamp(attrs[k]+talent+rnd(-4,4));
+    }
+  }
+  return attrs;
+}
+function rollDeclineAge(playerType){
+  // 投手通常較早進入衰退，野手較晚；每名球員仍有 ±2 年左右差異。
+  return playerType==='hitter'?rnd(33,37):rnd(30,34);
+}
+function role(){
+  var a=state.attrs,s=(a.control+a.movement+a.stuff+a.stamina)/4;
+  if(state.playerType!=='pitcher')return hRole();
+  if(state.pitchRolePref==='starter'){
+    if(s>=66&&a.stamina>=62)return'一軍先發';
+    if(s>=58&&a.stamina>=56)return'二軍先發';
+    return'二軍培養';
+  }
+  if(state.pitchRolePref==='reliever'){
+    if(s>=64)return'一軍牛棚';
+    if(s>=56)return'二軍牛棚';
+    return'二軍培養';
+  }
+  // 聽天由命：體力越高越傾向先發，否則以牛棚為主。
+  if(s>=72&&a.stamina>=70)return'一軍先發';
+  if(s>=66&&a.stamina<70)return'一軍牛棚';
+  if(s>=59&&a.stamina>=64)return'二軍先發';
+  if(s>=56)return'二軍牛棚';
+  return'二軍培養';
+}
+function addLog(s){
+  try{
+    var _msg=String(s);
+    if(_msg.indexOf('全壘打')>=0){
+      sfx('homerun');
+    }else if(_msg.indexOf('敲出關鍵安打')>=0||_msg.indexOf('安打！')>=0){
+      sfx('hit');
+    }else if(_msg.indexOf('遭到三振')>=0){
+      sfx('hitterStrikeout');
+    }else if(_msg.indexOf('STRIKE THREE')>=0){
+      sfx('pitcherStrikeout');
+    }else if(_msg.indexOf('失投遭到長打')>=0){
+      sfx('pitcherMistake');
+    }else if(_msg.indexOf('關鍵')>=0){
+      sfx('clutch');
+    }else if(_msg.indexOf('傷')>=0||_msg.indexOf('報銷')>=0){
+      sfx('injury');
+    }else if(_msg.indexOf('獲得')>=0||_msg.indexOf('獎')>=0||_msg.indexOf('稱號')>=0){
+      sfx('award');
+    }else if(_msg.indexOf('總冠軍')>=0||_msg.indexOf('冠軍')>=0||_msg.indexOf('日本一')>=0||_msg.indexOf('World Series')>=0){
+      sfx('championship');
+    }
+  }catch(_e){}
+state.log.push(s)}
+function era(){return state.season.ip?((state.season.er*9)/state.season.ip).toFixed(2):'0.00'}
+function formatIP(ip){
+  var outs=Math.max(0,Math.round((Number(ip)||0)*3));
+  return Math.floor(outs/3)+'.'+(outs%3);
+}
+function summary(){return state.season.g+'G / '+state.season.gs+'GS / '+state.season.w+'-'+state.season.l+' / '+formatIP(state.season.ip)+' IP / ERA '+era()+' / '+state.season.k+' K'}
+function getLeagueTeam(name){for(var i=0;i<state.league.length;i++)if(state.league[i].name===name)return state.league[i];return null}
+function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=rnd(0,i),t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
+function isHealthy(){return !state.injury}
+function fatiguePenalty(){return Math.max(0,(state.fatigue-55)*0.22)}
+function healOneGame(){if(state.injury&&state.injury.gamesLeft>0){state.injury.gamesLeft--;if(state.injury.gamesLeft<=0){addLog('✅ 傷勢恢復，可以重新出賽。');state.injury=null;state.fatigue=Math.min(state.fatigue,45)}}state.fatigue=clamp(state.fatigue-rnd(1,3))}
+function applyInjuryRisk(){if(state.injury)return;var f=state.fatigue,d=state.attrs.durability;if(state.startSkill==='ironman'&&f<60)return;if(f>=100){if(Math.random()<0.38){state.injury={name:'重大手臂傷勢｜賽季報銷',gamesLeft:999,seasonEnding:true};addLog('🚑 疲勞達到100%，發生重大手臂傷勢，本季報銷。')}else{state.injury={name:'手臂疲勞｜傷停約1個月',gamesLeft:24,seasonEnding:false};addLog('🩹 疲勞達到100%，被放入傷兵名單，預計缺席約1個月。')}return}
+var risk=0.002+Math.max(0,f-60)*0.0018; risk*=Math.max(.45,1-(d-50)*.009);if(Math.random()<risk){if(f>88&&Math.random()<.28){state.injury={name:'重大手臂傷勢｜賽季報銷',gamesLeft:999,seasonEnding:true};addLog('🚑 高疲勞下發生重大傷勢，本季報銷。')}else{var days=f>80?rnd(18,30):rnd(6,15);state.injury={name:'傷停 '+days+' 場',gamesLeft:days,seasonEnding:false};addLog('🩹 出現傷勢，預計缺席 '+days+' 場。')}}}
+function gameScore(home,away,playerImpact){var hs=rnd(0,6)+Math.round(home.strength/18),as=rnd(0,6)+Math.round(away.strength/18);if(playerImpact&&home.name===state.team)hs+=playerImpact;if(playerImpact&&away.name===state.team)as+=playerImpact;while(hs===as){if(Math.random()<.5)hs++;else as++}return {h:hs,a:as}}
+
+function seasonGameLimit(){
+  return state.currentLeague==='MLB'?162:state.currentLeague==='NPB'?143:120;
+}
+function overseasOpponentName(){
+  var pool=state.currentLeague==='MLB'?mlbTeams:state.currentLeague==='NPB'?npbTeams:[];
+  var candidates=pool.filter(function(x){return x!==state.team});
+  return candidates.length?candidates[rnd(0,candidates.length-1)]:'對手球隊';
+}
+
+function overseasTeamStrength(name,league){
+  var pool=league==='MLB'?mlbTeams:npbTeams;
+  var idx=pool.indexOf(name);
+  var seed=(idx>=0?idx:0)+1;
+  return 48+((seed*7)%15)+rnd(-4,4);
+}
+function makeOverseasField(league){
+  var pool=(league==='MLB'?mlbTeams:npbTeams).slice();
+  var rows=pool.map(function(name){
+    var s=overseasTeamStrength(name,league),gp=seasonGameLimit(),pct=.42+(s-48)*.008+(Math.random()-.5)*.09;
+    pct=Math.max(.30,Math.min(.69,pct));
+    var w=Math.round(gp*pct),l=gp-w;
+    return {name:name,w:w,l:l,strength:s,pct:w/gp};
+  });
+  var mine=rows.find(function(x){return x.name===state.team});
+  if(mine){mine.w=state.teamW;mine.l=state.teamL;mine.pct=state.teamW/Math.max(1,state.teamW+state.teamL)}
+  return rows;
+}
+function beginNPBPostseason(){
+  var rows=makeOverseasField('NPB').sort(function(a,b){return b.pct-a.pct});
+  var rank=rows.findIndex(function(x){return x.name===state.team})+1;
+  state.overseasPostseason={league:'NPB',stage:'climax1',rank:rank,rows:rows,champion:null,gameNo:0};
+  if(rank>6){
+    addLog('🏁 日職例行賽結束：'+state.team+' 排名未進入季後賽。');
+    simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete';return;
+  }
+  addLog('🎌 日職季後賽開始：'+state.team+' 以聯盟前段名次晉級 Climax Series。');
+  state.phase='overseas_postseason';
+}
+function beginMLBPostseason(){
+  var rows=makeOverseasField('MLB').sort(function(a,b){return b.pct-a.pct});
+  var rank=rows.findIndex(function(x){return x.name===state.team})+1;
+  state.overseasPostseason={league:'MLB',stage:'wildcard',rank:rank,rows:rows,champion:null,gameNo:0};
+  if(rank>12){
+    addLog('🏁 美職例行賽結束：'+state.team+' 未取得季後賽席位。');
+    simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete';return;
+  }
+  addLog('🇺🇸 美職季後賽開始：'+state.team+' 取得季後賽資格。');
+  state.phase='overseas_postseason';
+}
+function simulateSeriesWin(opp,needWins){
+  var a=overall()*overseasDifficultyMultiplier(),b=overseasTeamStrength(opp,state.currentLeague);
+  var p=Math.max(.32,Math.min(.68,.50+(a-b)*.007));
+  var my=0,op=0;
+  while(my<needWins&&op<needWins){if(Math.random()<p)my++;else op++}
+  return {win:my>op,my:my,op:op};
+}
+function randomOpponent(pool,exclude){
+  var a=pool.filter(function(x){return x!==exclude});return a[rnd(0,a.length-1)];
+}
+function simulateOverseasPostseasonStep(){
+  var p=state.overseasPostseason;if(!p)return false;
+  var pool=p.league==='MLB'?mlbTeams:npbTeams,opp,ser;
+  if(p.league==='NPB'){
+    if(p.stage==='climax1'){
+      opp=randomOpponent(pool,state.team);ser=simulateSeriesWin(opp,2);
+      addLog('🎌 Climax Series 第一階段：'+state.team+' '+ser.my+'-'+ser.op+' '+opp+'。');
+      if(!ser.win){simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete';return false}
+      p.stage='climaxFinal';return true;
+    }
+    if(p.stage==='climaxFinal'){
+      opp=randomOpponent(pool,state.team);ser=simulateSeriesWin(opp,4);
+      addLog('🎌 Climax Series Final：'+state.team+' '+ser.my+'-'+ser.op+' '+opp+'。');
+      if(!ser.win){simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete';return false}
+      p.stage='japanSeries';return true;
+    }
+    if(p.stage==='japanSeries'){
+      opp=randomOpponent(pool,state.team);ser=simulateSeriesWin(opp,4);
+      addLog('🏆 日本一：'+state.team+' '+ser.my+'-'+ser.op+' '+opp+'。');
+      if(ser.win){p.champion=state.team;state.overseasChampionships=state.overseasChampionships||[];state.overseasChampionships.push({year:state.year,league:'NPB',name:'日本一'});addLog('🏆 '+state.team+' 奪得日本一！')}
+      simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete';return false;
+    }
+  }else{
+    if(p.stage==='wildcard'){
+      opp=randomOpponent(pool,state.team);ser=simulateSeriesWin(opp,2);
+      addLog('🇺🇸 Wild Card Series：'+state.team+' '+ser.my+'-'+ser.op+' '+opp+'。');
+      if(!ser.win){simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete';return false}
+      p.stage='division';return true;
+    }
+    if(p.stage==='division'){
+      opp=randomOpponent(pool,state.team);ser=simulateSeriesWin(opp,3);
+      addLog('🇺🇸 Division Series：'+state.team+' '+ser.my+'-'+ser.op+' '+opp+'。');
+      if(!ser.win){simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete';return false}
+      p.stage='leagueChamp';return true;
+    }
+    if(p.stage==='leagueChamp'){
+      opp=randomOpponent(pool,state.team);ser=simulateSeriesWin(opp,4);
+      addLog('🇺🇸 League Championship Series：'+state.team+' '+ser.my+'-'+ser.op+' '+opp+'。');
+      if(!ser.win){simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete';return false}
+      p.stage='worldSeries';return true;
+    }
+    if(p.stage==='worldSeries'){
+      opp=randomOpponent(pool,state.team);ser=simulateSeriesWin(opp,4);
+      addLog('🏆 World Series：'+state.team+' '+ser.my+'-'+ser.op+' '+opp+'。');
+      if(ser.win){p.champion=state.team;state.overseasChampionships=state.overseasChampionships||[];state.overseasChampionships.push({year:state.year,league:'MLB',name:'世界大賽冠軍'});addLog('🏆 '+state.team+' 奪得世界大賽冠軍！')}
+      simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete';return false;
+    }
+  }
+  return false;
+}
+function finishRegularSeason(){
+  if(state.currentLeague==='CPBL'){beginPostseason();return}
+  addLog('🏁 '+state.year+' '+leagueLabel()+'例行賽結束：'+state.team+' '+state.teamW+'-'+state.teamL+'。');
+  if(state.currentLeague==='NPB'){beginNPBPostseason();return}
+  if(state.currentLeague==='MLB'){beginMLBPostseason();return}
+  simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete';
+}
+function playLeagueRound(playerImpact){
+  if(state.currentLeague!=='CPBL'){
+    var talent=(overall()-60)*.0025,impact=(Number(playerImpact)||0)*.025;
+    var winChance=Math.max(.27,Math.min(.73,.50+talent+impact+(Math.random()-.5)*.08));
+    if(Math.random()<winChance)state.teamW++;else state.teamL++;
+    return;
+  }
+  var list=shuffle(state.league.slice());
+  for(var i=0;i<list.length;i+=2){
+    var a=list[i],b=list[i+1],sc=gameScore(a,b,playerImpact);
+    if(sc.h>sc.a){a.w++;b.l++}else{a.l++;b.w++}
+  }
+  var mine=getLeagueTeam(state.team);
+  if(mine){state.teamW=mine.w;state.teamL=mine.l}
+}
+function shouldPlayerAppear(){if(!isHealthy())return false;var rl=role();if(rl==='一軍先發'||rl==='二軍先發'||rl==='二軍培養')return ((state.games-1)%5===state.rotationSlot);if(rl==='一軍牛棚')return Math.random()<0.48;if(rl==='二軍牛棚')return Math.random()<0.42;return false}
+function simulatePlayerAppearance(forceStarter){var a=state.attrs,pen=fatiguePenalty(),pit=(effectiveAttr('control',false)+effectiveAttr('movement',false)+effectiveAttr('stuff',false)+effectiveAttr('stamina',false))/4-pen,rl=role(),impact=0;if(!shouldPlayerAppear()&&!forceStarter){state.fatigue=clamp(state.fatigue-rnd(1,3));return 0}
+var starter=forceStarter||rl.indexOf('先發')>=0||(rl==='二軍培養'&&state.pitchRolePref!=='reliever');if(starter){state.season.g++;state.season.gs++;var baseIP=(rl==='一軍先發'?a.stamina/15:a.stamina/18);var ip=Math.max(1.2,Math.min(8,baseIP+Math.random()*2-pen/10));ip=Math.round(ip*3)/3;var levelAdj=rl==='一軍先發'?0:0.65;var eb=Math.max(1.8,5.7-(pit-50)*0.055-levelAdj),er=Math.max(0,Math.round((eb/9)*ip+(Math.random()-.5)*2));var k=Math.max(0,Math.round(ip*(.65+(a.movement+a.stuff)/220)+rnd(-2,2)));state.season.ip+=ip;state.season.er+=er;state.season.k+=k;state.season.bb+=Math.max(0,Math.round(ip*(.48-a.control/220)+Math.random()));state.season.h+=Math.max(0,Math.round(ip*(.9-a.stuff/240)+Math.random()*2));if(Math.random()<.58){if(er<=3){state.season.w++;impact=2}else{state.season.l++;impact=-1}}state.fatigue=clamp(state.fatigue+Math.round((rnd(11,19)-Math.floor(a.durability/20))*(state.startSkill==='ironman'?.95:1)))}else{state.season.g++;var ipr=Math.random()<.18?2:1;state.season.ip+=ipr;var rer=Math.random()<pit/118?0:rnd(0,2);state.season.er+=rer;state.season.k+=rnd(0,3);state.season.bb+=Math.random()<.25?1:0;state.season.h+=rnd(0,2);if(rer===0&&Math.random()<.18)state.season.w++;else if(rer>0&&Math.random()<.12)state.season.l++;state.fatigue=clamp(state.fatigue+Math.round((rnd(5,10)-Math.floor(a.durability/25))*(state.startSkill==='ironman'?.95:1)))}applyInjuryRisk();return impact}
+function maybeClutch(playoff){var rl=state.playerType==='hitter'?hRole():role();if(rl.indexOf('一軍')!==0||state.pendingClutch||!isHealthy())return;var chance=playoff ? .55 : .07;if(Math.random()>=chance)return;var oppName=playoff&&state.postseason?state.postseason.opponent:null;if(!oppName){
+  if(state.currentLeague!=='CPBL')oppName=overseasOpponentName();
+  else{var others=[];for(var i=0;i<state.league.length;i++)if(state.league[i].name!==state.team)others.push(state.league[i]);oppName=others.length?others[rnd(0,others.length-1)].name:'對手球隊'}
+}state.pendingClutch={opp:oppName,score:rnd(0,5)+':'+rnd(0,5),inning:rnd(7,9),outs:rnd(0,2),runner:['二壘','一、三壘','滿壘'][rnd(0,2)],playoff:!!playoff};el('clutch').className='card';setTimeout(function(){try{el('clutch').scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}},0)}
+function sortedLeague(){return state.league.slice().sort(function(a,b){var ap=a.w/Math.max(1,a.w+a.l),bp=b.w/Math.max(1,b.w+b.l);if(bp!==ap)return bp-ap;return b.w-a.w})}
+function beginPostseason(){if(state.phase!=='regular')return;state.phase='postseason';var s=sortedLeague(),seed1=s[0].name,seed2=s[1].name,seed3=s[2].name;addLog('🏁 例行賽結束。季後賽球隊：1. '+seed1+'、2. '+seed2+'、3. '+seed3+'。');if(state.playerType==='pitcher'&&role()==='一軍先發')addLog('📋 季後賽先發採4人輪值：挑戰賽最多先發1場；台灣大賽最多先發2場，兩次先發至少間隔3場休息。');state.postseason={stage:'challenge',seed1:seed1,a:seed2,b:seed3,wA:0,wB:0,target:2,gameNo:0,opponent:null,champion:null,starterSlot:rnd(1,3)};updatePostOpponent()}
+function updatePostOpponent(){var p=state.postseason;if(!p)return;if(p.stage==='challenge'){if(state.team===p.a)p.opponent=p.b;else if(state.team===p.b)p.opponent=p.a;else p.opponent=null}else if(p.stage==='final'){if(state.team===p.a)p.opponent=p.b;else if(state.team===p.b)p.opponent=p.a;else p.opponent=null}}
+function playoffTeamStrength(name){for(var i=0;i<state.league.length;i++)if(state.league[i].name===name)return state.league[i].strength;return 52}
+function simulatePostseasonGame(){
+var p=state.postseason;if(!p||p.champion||state.pendingClutch)return false;
+p.gameNo++;
+var pa=p.a,pb=p.b,sa=playoffTeamStrength(pa),sb=playoffTeamStrength(pb);
+var aScore=rnd(0,5)+Math.round(sa/20),bScore=rnd(0,5)+Math.round(sb/20);
+var playerInvolved=(state.team===pa||state.team===pb),impact=0;
+if(playerInvolved){
+  healOneGame();
+  if(state.playerType==='hitter'){
+    if(isHealthy()){
+      var hb=JSON.parse(JSON.stringify(state.hSeason));impact=simulateHitterAppearance();
+      ['g','pa','ab','h','hr','rbi','bb','so','sb'].forEach(function(k){var d=(state.hSeason[k]||0)-(hb[k]||0);state.postSeason[k]+=d;state.hSeason[k]-=d});
+    }
+  }else{
+    var start=false;
+    if(role()==='一軍先發'){
+      // 季後賽採4人先發輪值。挑戰賽最多只會先發1場；
+      // 七戰四勝台灣大賽在系列賽打滿時，最多先發2場，且至少間隔3場。
+      start=(p.gameNo===p.starterSlot||p.gameNo===p.starterSlot+4);
+    }
+    if(isHealthy()&&(start||role()==='一軍牛棚')){
+      var seasonBefore=JSON.parse(JSON.stringify(state.season));impact=simulatePlayerAppearance(start);
+      ['g','gs','w','l','ip','er','k'].forEach(function(k){var d=(state.season[k]||0)-(seasonBefore[k]||0);state.postSeason[k]+=d;state.season[k]-=d});
+    }
+  }
+  if(state.team===pa)aScore+=impact;else bScore+=impact;
+
+  // 季後賽關鍵時刻先暫停，玩家的選擇會先影響比分，之後才判定勝負/冠軍。
+  maybeClutch(true);
+  if(state.pendingClutch){
+    // 讓場面維持一分差或平手，確保關鍵操作真的有機會決定比賽。
+    var ownIsA=state.team===pa;
+    var oppScore=ownIsA?bScore:aScore;
+    var ownScore=ownIsA?aScore:bScore;
+    if(Math.abs(ownScore-oppScore)>1)ownScore=oppScore+rnd(-1,1);
+    if(ownIsA)aScore=ownScore;else bScore=ownScore;
+    state.pendingClutch.postseasonGame={pa:pa,pb:pb,aScore:aScore,bScore:bScore};
+    state.pendingClutch.seriesText=(p.stage==='final'?'台灣大賽':'季後挑戰賽')+' '+p.wA+'-'+p.wB;
+    return true;
+  }
+}
+finalizePostseasonGame(pa,pb,aScore,bScore);
+return true
+}
+
+function internationalTournamentForYear(year){
+  if(year>=2030&&(year-2030)%4===0)return '世界棒球經典賽';
+  if(year>=2027&&(year-2027)%4===0)return '世界棒球12強賽';
+  return '';
+}
+function simulateInternationalTournament(){
+  if(!state.international)state.international={events:[],career:{g:0,pa:0,ab:0,h:0,hr:0,rbi:0,bb:0,so:0,sb:0,ip:0,er:0,k:0,bbp:0,hp:0},medals:[],awards:[]};
+  var name=internationalTournamentForYear(state.year);
+  if(!name||state.international.events.some(function(x){return x.year===state.year&&x.name===name}))return;
+  var e=clubEvaluation(),selectionChance=e.grade==='S'?.98:e.grade==='A'?.90:e.grade==='B'?.65:e.grade==='C'?.30:.08;
+  if(Math.random()>selectionChance){addLog('🌏 '+state.year+' '+name+'：你未進入最終國家隊名單。');return}
+  var playerImpact=Math.max(-4,Math.min(10,(overall()-60)*.18+(state.startSkill==='playoff'?2:0)));
+  var teamBase=name==='世界棒球經典賽'?58:64;
+  var teamStrength=Math.max(40,Math.min(82,teamBase+rnd(-9,9)+playerImpact));
+  var championChance=name==='世界棒球經典賽'?.025:.055;
+  championChance+=Math.max(0,teamStrength-60)*.0015;
+  var silverChance=.08+Math.max(0,teamStrength-58)*.002;
+  var bronzeChance=.11+Math.max(0,teamStrength-56)*.002;
+  var rr=Math.random(),place;
+  if(rr<championChance)place=1;
+  else if(rr<championChance+silverChance)place=2;
+  else if(rr<championChance+silverChance+bronzeChance)place=3;
+  else place=rnd(4,8);
+  var strength=Math.max(35,Math.min(100,overall()+rnd(-8,8)));
+  var medal=place===1?'🥇 金牌':place===2?'🥈 銀牌':place===3?'🥉 銅牌':'第 '+place+' 名';
+  var ev={year:state.year,name:name,place:place,medal:medal,awards:[]};
+  if(state.playerType==='hitter'){
+    var g=rnd(4,8),pa=g*rnd(3,5),ab=Math.max(1,pa-rnd(1,5)),avg=Math.max(.120,Math.min(.500,.180+strength*.0025+(Math.random()-.5)*.09));
+    var h=Math.round(ab*avg),hr=Math.max(0,Math.round((strength-55)/18+Math.random()*2)),rbi=Math.max(0,hr*2+rnd(0,6)),bb=pa-ab,so=rnd(1,Math.max(2,Math.round(pa*.32))),sb=strength>70?rnd(0,3):0;
+    Object.assign(ev,{g:g,pa:pa,ab:ab,h:h,hr:hr,rbi:rbi,bb:bb,so:so,sb:sb});
+    var c=state.international.career;['g','pa','ab','h','hr','rbi','bb','so','sb'].forEach(function(k){c[k]+=ev[k]||0});
+    if(avg>=.330&&Math.random()<.45)ev.awards.push('國際賽最佳九人');
+    if(place===1&&avg>=.300&&Math.random()<.28)ev.awards.push('國際賽 MVP');
+  }else{
+    var g2=rnd(2,5),outs=rnd(10,45),ip=outs/3,era=Math.max(.3,6.2-strength*.055+(Math.random()-.5)*1.8),er=Math.round(ip*era/9),k=Math.max(1,Math.round(ip*(.65+strength*.006))),bbp=Math.max(0,Math.round(ip*(.45-strength*.0035))),hp=Math.max(1,Math.round(ip*(1.05-strength*.005)));
+    Object.assign(ev,{g:g2,ip:ip,er:er,k:k,bbp:bbp,hp:hp});
+    var c2=state.international.career;c2.g+=g2;c2.ip+=ip;c2.er+=er;c2.k+=k;c2.bbp+=bbp;c2.hp+=hp;
+    var era2=ip?er*9/ip:9;
+    if(era2<=2.25&&Math.random()<.45)ev.awards.push('國際賽最佳投手');
+    if(place===1&&era2<=2.00&&Math.random()<.28)ev.awards.push('國際賽 MVP');
+  }
+  state.international.events.push(ev);
+  if(place<=3)state.international.medals.push({year:state.year,name:name,medal:medal});
+  ev.awards.forEach(function(a){state.international.awards.push({year:state.year,name:a,tournament:name})});
+  addLog('🌏 '+state.year+' '+name+'：中華隊最終 '+medal+'。'+(ev.awards.length?' 你獲得 '+ev.awards.join('、')+'。':''));
+}
+function internationalSummaryHTML(){
+  var I=state.international;if(!I||!I.events.length)return '<span class="muted">生涯沒有國際賽出賽紀錄。</span>';
+  var c=I.career,h='';
+  if(state.playerType==='hitter'){
+    var avg=c.ab?c.h/c.ab:0;h='<div class="stat"><span>國際賽</span><b>'+c.g+' G｜'+c.pa+' PA｜AVG '+fmt3(avg)+'｜'+c.hr+' HR｜'+c.rbi+' RBI</b></div>';
+  }else{
+    var era=c.ip?c.er*9/c.ip:0;h='<div class="stat"><span>國際賽</span><b>'+c.g+' G｜'+formatIP(c.ip)+' IP｜ERA '+era.toFixed(2)+'｜'+c.k+' K</b></div>';
+  }
+  h+='<div class="award-section-title">歷屆成績</div>';
+  I.events.forEach(function(e){h+='<div class="award-year-card"><div class="award-year-label">'+e.year+'｜'+e.name+'</div><div>'+e.medal+(e.awards&&e.awards.length?'｜'+e.awards.join('、'):'')+'</div></div>'});
+  return h;
+}
+function finishYearAfterPostseason(){simulateInternationalTournament();saveSeasonHistory();bankSeason();state.phase='complete'}
+
+
+
+function skillDescription(v){
+  return {
+    ironman:'疲勞值累積減少 5%；疲勞未達 60% 時不會因一般疲勞機制受傷。',
+    genius:'每次季初訓練成功增加能力時，成長點數加倍。',
+    playoff:'例行賽實戰能力約 -10%；進入季後賽後實戰能力約 +20%。',
+    clutch:'關鍵時刻判定獲得約 +8% 成功率。',
+    workhorse:'疲勞恢復較快；投手體力消耗較低，野手更容易維持先發出賽。',
+    fastlearn:'季初訓練的成功率提高，但單次成長幅度不加倍。',
+    powergift:'野手力量、投手球威相關訓練更容易成功。',
+    commandgift:'野手選球、投手控球相關訓練更容易成功。',
+    defensegift:'守備類能力訓練與自然成長較容易發生。',
+    speedgift:'速度與敏捷相關訓練較容易成功。',
+    latebloomer:'25歲後仍保有額外自然成長機會，較晚進入完全成熟期。'
+  }[v]||'';
+}
+function showTip(title,txt){
+  el('tipTitle').textContent=title;el('tipText').textContent=txt||'目前沒有額外效果說明。';
+  el('longPressTip').className='';
+  clearTimeout(window.__tipHide);
+  window.__tipHide=setTimeout(function(){el('longPressTip').className='hidden'},4200);
+}
+function bindLongPress(node,title,txt){
+  if(!node||node.dataset.lpBound)return;node.dataset.lpBound='1';
+  node.classList.add('tip-target');
+  var timer=null,moved=false;
+  function begin(){moved=false;clearTimeout(timer);timer=setTimeout(function(){if(!moved)showTip(title,txt)},480)}
+  function cancel(){clearTimeout(timer)}
+  node.addEventListener('touchstart',begin,{passive:true});
+  node.addEventListener('touchmove',function(){moved=true;cancel()},{passive:true});
+  node.addEventListener('touchend',cancel,{passive:true});
+  node.addEventListener('touchcancel',cancel,{passive:true});
+  node.addEventListener('mousedown',begin);
+  node.addEventListener('mouseup',cancel);
+  node.addEventListener('mouseleave',cancel);
+  node.addEventListener('contextmenu',function(e){e.preventDefault();showTip(title,txt)});
+}
+function bindTooltipUI(){
+  if(!state)return;
+  bindLongPress(el('skillName'),'初始技能｜'+skillLabel(state.startSkill),skillDescription(state.startSkill));
+  var badges=el('achievementBadges').querySelectorAll('[data-ach]');
+  for(var i=0;i<badges.length;i++){
+    var n=badges[i].getAttribute('data-ach'),a=null;
+    for(var j=0;j<state.achievements.length;j++)if(state.achievements[j].name===n){a=state.achievements[j];break}
+    bindLongPress(badges[i],'稱號｜'+n,a?a.desc:'');
+  }
+}
+
+function skillLabel(v){return {ironman:'鐵人',genius:'天才',playoff:'季後賽型球員',clutch:'大心臟',workhorse:'工作馬',fastlearn:'快速學習',powergift:'力量天賦',commandgift:'精準天賦',defensegift:'守備職人',speedgift:'速度之星',latebloomer:'大器晚成'}[v]||v}
+function declineStartAge(){return state&&state.declineAge?state.declineAge:(state&&state.playerType==='hitter'?35:32)}
+function careerPhaseName(age){if(age<25)return'成長期';if(age<declineStartAge())return'黃金期';return'衰退期'}
+function coreKeys(){
+  if(state.playerType==='hitter')return ['contact','power','discipline','speed','agility','range','catching','throwing','arm'].concat(state.fieldType==='catcher'?['calling']:[]);
+  return ['control','movement','stuff','stamina','durability','defense'];
+}
+function effectiveAttr(k,playoff){
+  var v=state.attrs[k]||0,m=1;
+  if(state.startSkill==='playoff')m*=playoff?1.20:.90;
+  if(careerPhaseName(state.age)==='黃金期')m*=1.10;
+  if(state.seasonMods&&state.seasonMods[k])m*=state.seasonMods[k];m*=overseasDifficultyMultiplier();
+  return v*m;
+}
+function overall(){
+  var ks=coreKeys(),s=0;for(var i=0;i<ks.length;i++)s+=state.attrs[ks[i]]||0;return s/Math.max(1,ks.length)
+}
+function clubEvaluation(){
+  var o=overall(),grade='F',label='戰力外邊緣';
+  if(o>=85){grade='S';label='聯盟頂級'}
+  else if(o>=75){grade='A';label='主力核心'}
+  else if(o>=65){grade='B';label='穩定一軍'}
+  else if(o>=55){grade='C';label='輪替戰力'}
+  else if(o>=45){grade='D';label='一二軍邊緣'}
+  else if(o>=35){grade='E';label='戰力外危機'}
+  return {score:Math.round(o),grade:grade,label:label};
+}
+function forcedRetirementReason(){
+  if(state.age<declineStartAge())return '';
+  var e=clubEvaluation();
+  if(state.age>=45)return '年齡已達45歲，球團決定結束球員合約。';
+  if(e.score<35)return '球團評價降至 F（'+e.score+'），已低於職業續約標準。';
+  if(state.age>=35&&e.score<45)return '球團評價僅剩 E（'+e.score+'），球團決定不再續約。';
+  if(state.age>=40&&e.score<55)return '進入生涯末期後評價降至 D 以下，球團決定進行世代交替。';
+  return '';
+}
+function grantAchievement(name,desc){
+  if(state.achievements.some(function(x){return x.name===name}))return;
+  state.achievements.push({name:name,desc:desc,year:state.year});
+  addLog('🏅 獲得稱號「'+name+'」：'+desc);
+}
+function hasAchievement(name){return state.achievements.some(function(x){return x.name===name})}
+function checkAchievements(){
+  if(state.playerType==='hitter'){
+    var c=state.career||{},s=state.hSeason||{};
+    if(state.attrs.power>=100)grantAchievement('怪力男','全壘打率 +10%');
+    else if(state.attrs.power>=80)grantAchievement('力量人','全壘打率 +3%');
+    if(state.attrs.contact>=90)grantAchievement('安打製造機','安打形成率 +5%');
+    if(state.attrs.speed>=90)grantAchievement('飛毛腿','盜壘與跑壘效果提升');
+    if(state.attrs.range>=90&&state.attrs.catching>=88)grantAchievement('外野蜘蛛人','守備範圍與接球穩定度提升');
+    if(state.attrs.arm>=92)grantAchievement('雷射肩','長傳與阻殺效果提升');
+    if(state.attrs.discipline>=90)grantAchievement('選球機器','保送率提高、追打壞球率下降');
+    if((c.h||0)>=1000)grantAchievement('千安俱樂部','生涯累積1000安');
+    if((c.h||0)>=2000)grantAchievement('兩千安傳奇','生涯累積2000安');
+    if((c.hr||0)>=200)grantAchievement('兩百轟重砲','生涯累積200轟');
+    if((c.hr||0)>=300)grantAchievement('三百轟俱樂部','生涯累積300轟');
+    if((s.hr||0)>=30)grantAchievement('單季30轟','單季至少30支全壘打');
+    if((s.h||0)>=180)grantAchievement('單季安打機器','單季至少180支安打');
+  }else{
+    var cp=state.career||{},sp=state.season||{};
+    if(state.attrs.control>=90)grantAchievement('精密機器','保送與失投率下降');
+    if(state.attrs.stuff>=90)grantAchievement('火球霸主','壓制長打能力提升');
+    if(state.attrs.durability>=90)grantAchievement('鋼鐵手臂','傷病風險下降');
+    if(state.attrs.movement>=90)grantAchievement('魔球使','變化球實戰效果提升');
+    if((state.attrs.veloMax||0)>=155)grantAchievement('火球男','155 km/h 等級速球');
+    if((cp.w||0)>=100)grantAchievement('百勝投手','生涯累積100勝');
+    if((cp.w||0)>=150)grantAchievement('王牌傳奇','生涯累積150勝');
+    if((cp.k||0)>=1000)grantAchievement('千K俱樂部','生涯累積1000次三振');
+    if((cp.k||0)>=2000)grantAchievement('兩千K傳奇','生涯累積2000次三振');
+    if((sp.k||0)>=180)grantAchievement('單季K博士','單季至少180次三振');
+    if((sp.ip||0)>=180)grantAchievement('吃局數王牌','單季至少180局');
+  }
+  if((state.championshipYears||[]).length>=3)grantAchievement('王朝核心','生涯至少3次台灣大賽冠軍');
+  if((state.fmvpYears||[]).length>=2)grantAchievement('十月先生','至少2次台灣大賽FMVP');
+  if(state.international&&state.international.medals&&state.international.medals.some(function(x){return x.medal.indexOf('金牌')>=0}))grantAchievement('國家英雄','曾在12強或經典賽奪得金牌');
+}
+function applyAgePhase(){
+  var phase=careerPhaseName(state.age),ks=coreKeys();
+  if(phase==='成長期'){
+    if(state.startSkill==='latebloomer'&&state.age>=25&&Math.random()<.55){var lk=ks[rnd(0,ks.length-1)];state.attrs[lk]=clamp((state.attrs[lk]||0)+1);addLog('🌱 大器晚成：'+label(lk)+' +1');}
+    var n=rnd(1,2);
+    for(var i=0;i<n;i++){
+      var k=ks[rnd(0,ks.length-1)];
+      state.attrs[k]=clamp((state.attrs[k]||0)+1);
+      addLog('🌱 成長期自然成長：'+label(k)+' +1');
+    }
+  }else if(phase==='衰退期'){
+    var pct=rnd(13,25);
+    for(var j=0;j<ks.length;j++){
+      var k2=ks[j],before=state.attrs[k2]||0;
+      state.attrs[k2]=clamp(Math.round(before*(1-pct/100)));
+    }
+    if(state.playerType==='pitcher'){
+      var veloDrop=rnd(1,3);
+      state.attrs.veloMax=Math.max(125,(state.attrs.veloMax||140)-veloDrop);
+    }
+    var e=clubEvaluation();
+    addLog('📉 '+state.age+'歲進入／處於衰退期：本季核心能力整體下降 '+pct+'%（v0.6 已將一般衰退幅度約減半）。目前球團評價 '+e.grade+'（'+e.score+'）｜'+e.label+'。');
+  }
+}
+function seasonalEvent(){
+  if(state.pendingEvent)return;
+  var pool=[
+    {
+      type:'event',title:'球迷簽名會',
+      text:'球團安排你參加大型球迷活動。你可以提早離場休息，也可以留下來和球迷互動。',
+      safe:'準時離場休息',risk:'留下陪球迷',
+      resolve:function(choice){
+        if(choice==='safe'){state.fatigue=clamp(state.fatigue-5);addLog('✍️ 你準時離場休息，疲勞 -5%。');return}
+        if(Math.random()<.72){state.morale=clamp((state.morale||50)+10);addLog('💛 你和球迷建立連結，士氣 +10。')}
+        else{state.fatigue=clamp(state.fatigue+8);addLog('😮‍💨 活動拖得太晚，疲勞 +8%。')}
+      }
+    },
+    {
+      type:'event',title:'老將的私下指導',
+      text:'隊上一名老將願意在練習後留下來教你一些技巧。',
+      safe:'婉拒並照表操課',risk:'留下接受指導',
+      resolve:function(choice){
+        if(choice==='safe'){addLog('📋 你照原本菜單完成訓練，沒有額外變化。');return}
+        var ks=coreKeys(),k=ks[rnd(0,ks.length-1)];
+        state.attrs[k]=clamp((state.attrs[k]||0)+rnd(1,3));state.fatigue=clamp(state.fatigue+5);
+        addLog('🧠 老將指導讓你有所突破：'+label(k)+' 永久提升，疲勞 +5%。');
+      }
+    },
+    {
+      type:'event',title:'裝備調整',
+      text:'裝備廠商送來一批新裝備，你可以維持熟悉的配置，也可以直接在比賽中測試。',
+      safe:'維持原裝備',risk:'測試新裝備',
+      resolve:function(choice){
+        if(choice==='safe'){addLog('🧤 你選擇熟悉的裝備，狀態維持穩定。');return}
+        if(Math.random()<.55){
+          var k=state.playerType==='hitter'?'contact':'control';state.seasonMods[k]=1.06;addLog('✨ 新裝備很合手，本季 '+label(k)+' 實戰效果 +6%。');
+        }else{state.fatigue=clamp(state.fatigue+6);addLog('🔧 你花了不少時間重新適應，疲勞 +6%。')}
+      }
+    },
+    {
+      type:'event',title:'明星球員邀約',
+      text:'休兵日有明星球員邀你一起自主訓練。強度很高，但可能學到新的東西。',
+      safe:'留在飯店恢復',risk:'參加自主訓練',
+      resolve:function(choice){
+        if(choice==='safe'){state.fatigue=clamp(state.fatigue-10);addLog('🛏️ 你把休兵日用來恢復，疲勞 -10%。');return}
+        if(Math.random()<.64){var ks=coreKeys(),k=ks[rnd(0,ks.length-1)];state.attrs[k]=clamp((state.attrs[k]||0)+2);addLog('🌟 自主訓練收穫很大：'+label(k)+' 永久 +2。')}
+        else{state.fatigue=clamp(state.fatigue+12);addLog('🥵 強度超出預期，疲勞 +12%。')}
+      }
+    },
+    {
+      type:'training',title:'教練提出高強度特訓',
+      text:'教練認為你最近的狀態很好，邀請你進行額外特訓。成功會永久提升能力，但失敗可能增加疲勞。',
+      safe:'照原訂計畫休息',risk:'接受高強度特訓',
+      resolve:function(choice){
+        if(choice==='safe'){addLog('🧘 你拒絕額外特訓，選擇照原訂計畫恢復。疲勞 -5%。');state.fatigue=clamp(state.fatigue-5);return}
+        var ks=coreKeys(),k=ks[rnd(0,ks.length-1)];
+        if(Math.random()<.62){state.attrs[k]=clamp((state.attrs[k]||0)+rnd(1,2));addLog('🎯 特訓成功：'+label(k)+' 永久 +'+(state.attrs[k]>=100?'':'1～2')+'。')}
+        else{state.fatigue=clamp(state.fatigue+15);addLog('🥵 特訓效果不佳，疲勞 +15%。')}
+      }
+    },
+    {
+      type:'event',title:'帶傷硬撐還是休息？',
+      text:'你感覺身體有些緊繃，但下一場比賽很重要。你可以保守休息，也可以硬撐上場。',
+      safe:'主動休息',risk:'咬牙上場',
+      resolve:function(choice){
+        if(choice==='safe'){state.fatigue=clamp(state.fatigue-12);addLog('🛌 你選擇休息，疲勞 -12%。');return}
+        if(Math.random()<.58){state.seasonMods.durability=1.08;addLog('💪 你撐過去了，本季韌性效果 +8%。')}
+        else{state.fatigue=clamp(state.fatigue+18);applyInjuryRisk();addLog('⚠️ 你硬撐上場，疲勞 +18%，並承擔額外傷病風險。')}
+      }
+    },
+    {
+      type:'event',title:'媒體聚焦',
+      text:'近期你的表現受到大量媒體關注。你可以低調避開壓力，也可以主動接受曝光。',
+      safe:'保持低調',risk:'接受專訪',
+      resolve:function(choice){
+        if(choice==='safe'){addLog('📰 你保持低調，沒有額外影響。');return}
+        if(Math.random()<.60){
+          if(state.playerType==='hitter')state.seasonMods.discipline=1.08;else state.seasonMods.control=1.08;
+          addLog('🌟 專訪後信心提升，本季選球／控球效果 +8%。');
+        }else{
+          if(state.playerType==='hitter')state.seasonMods.contact=.94;else state.seasonMods.control=.94;
+          addLog('😵 媒體壓力影響狀態，本季打擊／控球效果 -6%。');
+        }
+      }
+    },
+    {
+      type:'training',title:'嘗試改變訓練方式',
+      text:'訓練團隊提出一套新的訓練法，可能帶來突破，也可能打亂你原本的節奏。',
+      safe:'維持目前訓練',risk:'嘗試新訓練法',
+      resolve:function(choice){
+        if(choice==='safe'){addLog('📋 你維持目前訓練方式，沒有額外變化。');return}
+        var ks=coreKeys(),k=ks[rnd(0,ks.length-1)];
+        if(Math.random()<.50){state.attrs[k]=clamp((state.attrs[k]||0)+2);addLog('🚀 新訓練法奏效：'+label(k)+' 永久 +2。')}
+        else{state.attrs[k]=clamp((state.attrs[k]||0)-1);addLog('📉 訓練方式不適合你：'+label(k)+' -1。')}
+      }
+    },
+    {
+      type:'event',title:'連續遠征',
+      text:'球隊即將展開一段密集客場。你可以提前調整出賽節奏，也可以照常拼滿。',
+      safe:'調整出賽節奏',risk:'照常全力出賽',
+      resolve:function(choice){
+        if(choice==='safe'){state.fatigue=clamp(state.fatigue-6);addLog('🚌 你提前調整節奏，疲勞 -6%。');return}
+        if(Math.random()<.55){if(state.playerType==='hitter')state.seasonMods.power=1.06;else state.seasonMods.stuff=1.06;addLog('🔥 遠征期間狀態火熱，本季主要進攻能力 +6%。')}
+        else{state.fatigue=clamp(state.fatigue+14);addLog('😮‍💨 密集遠征消耗過大，疲勞 +14%。')}
+      }
+    }
+  ];
+  var ev=pool[rnd(0,pool.length-1)];
+  state.pendingEvent={event:ev};
+  el('eventChoiceText').innerHTML='<b>'+ev.title+'</b><br>'+ev.text;
+  el('eventChoiceButtons').innerHTML="<button class='alt' onclick=\"resolveEventChoice('safe')\">"+ev.safe+"</button><button onclick=\"resolveEventChoice('risk')\">"+ev.risk+"</button>";
+  el('eventChoice').className='card';
+  setTimeout(function(){try{el('eventChoice').scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}},0);
+}
+window.resolveEventChoice=function(choice){safe(function(){
+  if(!state||!state.pendingEvent)return;
+  var ev=state.pendingEvent.event;
+  ev.resolve(choice);
+  state.pendingEvent=null;
+  el('eventChoice').className='card hidden';
+  checkAchievements();render();
+})}
+
+function legendPitch(control,stuff,movement,velo){
+  return {control:clamp(control),stuff:clamp(stuff),movement:movement===null?null:clamp(movement),velo:velo};
+}
+function applyLegendPitchProfile(n){
+  if(state.playerType!=='pitcher')return;
+  var vmax=state.attrs.veloMax||150, profiles={
+    '曾峻岳':{
+      '四縫線':legendPitch(72,90,null,Math.max(vmax,155)),
+      '滑球':legendPitch(74,88,88,139),
+      '指叉球':legendPitch(68,80,82,142)
+    },
+    '黃平洋':{
+      '四縫線':legendPitch(80,82,null,148),
+      '滑球':legendPitch(84,86,88,132),
+      '叉指球':legendPitch(76,82,84,136),
+      '曲球':legendPitch(78,76,82,123)
+    },
+    '徐若熙':{
+      '四縫線':legendPitch(82,94,null,Math.max(vmax,158)),
+      '叉指變速球':legendPitch(80,92,93,139),
+      '卡特球':legendPitch(76,84,82,145),
+      '滑球':legendPitch(74,82,84,136),
+      '曲球':legendPitch(70,76,80,126)
+    },
+    '陳冠宇':{
+      '四縫線':legendPitch(82,82,null,146),
+      '滑球':legendPitch(84,86,88,132),
+      '變速球':legendPitch(80,82,84,128),
+      '曲球':legendPitch(78,76,82,121)
+    },
+    '陳義信':{
+      '四縫線':legendPitch(82,84,null,148),
+      '滑球':legendPitch(84,88,90,133),
+      '叉指球':legendPitch(78,82,86,137),
+      '曲球':legendPitch(80,78,84,122)
+    },
+    '林岳平':{
+      '四縫線':legendPitch(76,88,null,151),
+      '滑球':legendPitch(78,86,88,136),
+      '指叉球':legendPitch(74,84,88,139),
+      '曲球':legendPitch(70,76,80,124)
+    },
+    '林詩翔':{
+      '四縫線':legendPitch(78,90,null,154),
+      '滑球':legendPitch(80,88,89,138),
+      '指叉球':legendPitch(74,82,84,141)
+    },
+    '張奕':{
+      '四縫線':legendPitch(82,84,null,151),
+      '滑球':legendPitch(82,86,88,136),
+      '指叉球':legendPitch(78,82,86,139),
+      '曲球':legendPitch(76,76,82,124)
+    },
+    '古林睿煬':{
+      '四縫線':legendPitch(84,94,null,158),
+      '滑球':legendPitch(82,90,91,141),
+      '指叉球':legendPitch(80,88,90,143),
+      '曲球':legendPitch(76,80,84,127)
+    },
+    '黃子鵬':{
+      '四縫線':legendPitch(88,72,null,139),
+      '滑球':legendPitch(90,88,94,116),
+      '伸卡球':legendPitch(88,82,90,133),
+      '變速球':legendPitch(84,78,84,121)
+    },
+    '李東洺':{
+      '四縫線':legendPitch(80,82,null,149),
+      '滑球':legendPitch(82,84,87,134),
+      '變速球':legendPitch(80,78,82,127),
+      '曲球':legendPitch(78,76,82,121)
+    },
+    '莊昕諺':{
+      '四縫線':legendPitch(78,86,null,151),
+      '滑球':legendPitch(80,86,88,136),
+      '變速球':legendPitch(76,80,84,128),
+      '曲球':legendPitch(74,76,82,122)
+    },
+    '孫易磊':{
+      '四縫線':legendPitch(78,92,null,157),
+      '滑球':legendPitch(78,87,89,139),
+      '指叉球':legendPitch(74,86,90,143),
+      '曲球':legendPitch(72,78,83,126)
+    },
+    '宋家豪':{
+      '四縫線':legendPitch(84,86,null,153),
+      '滑球':legendPitch(86,90,92,139),
+      '指叉球':legendPitch(80,84,87,141),
+      '變速球':legendPitch(80,80,83,132)
+    },
+    '王建民':{
+      '伸卡球':legendPitch(92,94,96,151),
+      '四縫線':legendPitch(86,82,null,151),
+      '滑球':legendPitch(86,86,88,135),
+      '變速球':legendPitch(82,78,83,132),
+      '指叉球':legendPitch(80,82,86,137)
+    },
+    '陳偉殷':{
+      '四縫線':legendPitch(90,90,null,154),
+      '滑球':legendPitch(88,91,92,137),
+      '變速球':legendPitch(84,82,86,132),
+      '曲球':legendPitch(82,80,85,126)
+    }
+  };
+  if(profiles[n]){
+    state.pitches=profiles[n];
+    var top=0;for(var k in state.pitches)top=Math.max(top,state.pitches[k].velo||0);
+    state.attrs.veloMax=Math.max(state.attrs.veloMax||0,top);
+  }else if(state.easterEgg){
+    /* 即使是以野手身分聞名的彩蛋，若玩家硬選投手，也保留彩蛋養成優勢。 */
+    for(var p in state.pitches){
+      state.pitches[p].control=clamp(state.pitches[p].control+rnd(5,9));
+      state.pitches[p].stuff=clamp(state.pitches[p].stuff+rnd(5,9));
+      if(state.pitches[p].movement!==null)state.pitches[p].movement=clamp(state.pitches[p].movement+rnd(5,9));
+    }
+  }
+}
+function applyOverseasEasterEgg(n,j){
+  var m={
+    '孫易磊':{title:'一壘哥-孫東寶',borderTheme:'overseas-fighters',club:'火腿隊',desc:'旅日彩蛋：火腿隊配色外框；球威、變化與球速天賦提升。'},
+    '陽岱鋼':{title:'Yoh桑',borderTheme:'overseas-fighters',club:'火腿隊',desc:'旅日彩蛋：火腿隊配色外框；速度、守備與長打能力提升。'},
+    '宋家豪':{title:'炒飯',borderTheme:'overseas-rakutenjp',club:'金鷲隊',desc:'旅日彩蛋：金鷲隊配色外框；控球、滑球與後援壓制力提升。'},
+    '鄭宗哲':{title:'Z',borderTheme:'overseas-redsox',club:'紅襪隊',desc:'旅美彩蛋：紅襪隊配色外框；打擊、速度與中線守備提升。'},
+    '李灝宇':{title:'怪力男比特犬',borderTheme:'overseas-tigers',club:'老虎隊',desc:'旅美彩蛋：老虎隊配色外框；力量與打擊能力提升。'},
+    '王建民':{title:'滾地球王子-沈默的王牌',borderTheme:'overseas-yankees',club:'洋基隊',desc:'旅美彩蛋：洋基隊配色外框；伸卡球、控球、體力與耐久大幅提升。'},
+    '陳偉殷':{title:'殷仔',borderTheme:'overseas-orioles',club:'金鶯隊',desc:'旅美彩蛋：金鶯隊配色外框；速球、滑球、控球與先發穩定度提升。'}
+  };
+  if(n==='古林睿煬'&&j===37)m[n]={title:'金孫',borderTheme:'overseas-fighters',club:'火腿隊',desc:'旅日彩蛋：背號37限定；火腿隊配色外框與巔峰投球配置。'};
+  if(n==='林安可'&&j===73)m[n]={title:'溫安可-溪武a第四棒',borderTheme:'overseas-seibulions',club:'西武獅',desc:'旅日彩蛋：背號73限定；西武獅配色外框與長打能力提升。'};
+  var e=m[n];if(!e)return false;
+  state.easterEgg=e;state.overseasEasterEgg=true;
+  if(!state.legendDeclineBonusApplied){
+    state.declineAge=(state.declineAge||rollDeclineAge(state.playerType))+3;
+    state.legendDeclineBonusApplied=true;
+  }
+  document.documentElement.classList.add(e.borderTheme);
+  if(state.playerType==='hitter'){
+    if(n==='陽岱鋼'){state.attrs.contact=clamp(state.attrs.contact+6);state.attrs.power=clamp(state.attrs.power+6);state.attrs.speed=clamp(state.attrs.speed+8);state.attrs.range=clamp(state.attrs.range+8);state.attrs.arm=clamp(state.attrs.arm+8)}
+    if(n==='鄭宗哲'){state.attrs.contact=clamp(state.attrs.contact+8);state.attrs.speed=clamp(state.attrs.speed+8);state.attrs.agility=clamp(state.attrs.agility+7);state.attrs.range=clamp(state.attrs.range+7)}
+    if(n==='李灝宇'){state.attrs.power=clamp(state.attrs.power+11);state.attrs.contact=clamp(state.attrs.contact+6);state.attrs.discipline=clamp(state.attrs.discipline+4)}
+    if(n==='林安可'){state.attrs.power=clamp(state.attrs.power+11);state.attrs.contact=clamp(state.attrs.contact+5)}
+  }else{
+    if(n==='孫易磊'){state.attrs.stuff=clamp(state.attrs.stuff+10);state.attrs.movement=clamp(state.attrs.movement+7);state.attrs.veloMax=Math.max(state.attrs.veloMax,157)}
+    if(n==='宋家豪'){state.attrs.control=clamp(state.attrs.control+8);state.attrs.movement=clamp(state.attrs.movement+8);state.attrs.stuff=clamp(state.attrs.stuff+6)}
+    if(n==='王建民'){state.attrs.control=clamp(state.attrs.control+10);state.attrs.movement=clamp(state.attrs.movement+10);state.attrs.stamina=clamp(state.attrs.stamina+9);state.attrs.durability=clamp(state.attrs.durability+9)}
+    if(n==='陳偉殷'){state.attrs.control=clamp(state.attrs.control+9);state.attrs.stuff=clamp(state.attrs.stuff+8);state.attrs.movement=clamp(state.attrs.movement+8);state.attrs.stamina=clamp(state.attrs.stamina+6)}
+    if(n==='古林睿煬'){state.attrs.stuff=clamp(state.attrs.stuff+9);state.attrs.control=clamp(state.attrs.control+5);state.attrs.movement=clamp(state.attrs.movement+5)}
+  }
+  applyLegendPitchProfile(n);
+  applyLegendPitchProfile(n);
+  grantAchievement(e.title,e.desc);
+  addLog('🌏 旅外彩蛋：'+n+'｜'+e.club+'「'+e.title+'」。本次僅套用旅外配色外框，選秀球隊維持 '+state.team+'。');
+  return true;
+}
+function applyEasterEgg(){
+  var n=(state.name||'').replace(/\s+/g,'').replace(/[・·]/g,''),j=state.jersey;
+  if(applyOverseasEasterEgg(n,j))return;
+  var m={
+   '張育成':{team:'臺北騎士',title:'部長',theme:'theme-knights',desc:'力量與臂力 +6；長打形成率提升。'},
+   '曾峻岳':{team:'臺北騎士',title:'火球終結者',theme:'theme-knights',desc:'球威 +8、控球 +3；牛棚壓制力提升。'},
+   '黃平洋':{team:'新北紅龍',title:'金臂人',theme:'theme-dragons',desc:'體力 +8、韌性 +8；疲勞與傷病抗性提升。'},
+   '徐若熙':{team:'新北紅龍',title:'龍之火球',theme:'theme-dragons',desc:'球威 +10、變化 +5；速球壓制能力提升。'},
+   '林智勝':{team:'桃園猴子',title:'大師兄',theme:'theme-lamiko',desc:'力量 +10、選球 +4；切換 Lamiko 淺藍主視覺。'},
+   '陳冠宇':{team:'桃園猴子',title:'左腕王牌',theme:'theme-lamiko',desc:'控球 +7、變化 +6；投球穩定性提升。'},
+   '彭政閔':{team:'臺中大象',title:'恰恰',theme:'theme-brothers',needJersey:23,desc:'打擊與選球 +8；安打、長打與相關訓練成長提升。'},
+   '陳義信':{team:'臺中大象',title:'假日飛刀手',theme:'theme-brothers',desc:'控球 +7、球威 +6、韌性 +5。'},
+   '林岳平':{team:'臺南獅子',title:'大餅',theme:'theme-lions-green',desc:'球威 +7、韌性 +7；統一獅時期綠色主視覺，橘色、白色副色。'},
+   '陳傑憲':{team:'臺南獅子',title:'四爺',theme:'theme-lions-orange',desc:'打擊 +9、速度 +5；安打形成率提升。'},
+   '魔鷹':{team:'高雄老鷹',title:'魔鷹',theme:'theme-eagles',desc:'力量 +12；全壘打與長打形成率提升。'},
+   '林詩翔':{team:'高雄老鷹',title:'守護神',theme:'theme-eagles',desc:'球威 +7、控球 +5、韌性 +5；後援壓制力提升。'},
+   '張奕':{team:'臺北騎士',title:'勝投怪盜',theme:'theme-knights',desc:'控球 +6、韌性 +5；關鍵局面與取得勝投的穩定度提升。'},
+   '戴培峰':{team:'臺北騎士',title:'戴捕',theme:'theme-knights',desc:'接球 +7、阻殺臂力 +7、配球 +6；捕手守備能力提升。'},
+   '吉力吉撈鞏冠':{team:'新北紅龍',title:'撈哥',theme:'theme-dragons',desc:'力量 +10、打擊 +5；長打形成率提升。'},
+   '郭天信':{team:'新北紅龍',title:'天網',theme:'theme-dragons',desc:'守備範圍 +9、接球 +8、速度 +5；外野守備能力提升。'},
+   '林立':{team:'桃園猴子',title:'林立的威、林立的力、林立的威力凌厲！',theme:'theme-lamiko',desc:'打擊 +8、力量 +6、速度 +5；攻擊能力全面提升。'},
+   '陳晨威':{team:'桃園猴子',title:'神威',theme:'theme-lamiko',desc:'速度 +10、守備範圍 +6；盜壘與跑壘威脅提升。'},
+   '江坤宇':{team:'臺中大象',title:'團寵草莓牛奶小可愛游擊柯基國民兒子小白豬老將小可怕江督嘟嘟嘴天竺鼠車車閃電麥坤坤ㄏㄏ我坤善逸西殺江坤宇 <span class="corgi-easter" title="柯基彩蛋">🐕</span>',theme:'theme-brothers',desc:'接球 +10、守備範圍 +9、敏捷 +8；游擊守備與安打形成能力提升。'},
+   '岳東華':{team:'臺中大象',title:'岳家大哥',theme:'theme-brothers',desc:'力量 +6、守備範圍 +5、臂力 +5；攻守更加均衡。'},
+   '古林睿煬':{team:'臺南獅子',title:'金孫',theme:'theme-lions-orange',desc:'球威 +9、控球 +5、變化 +5；投手成長與壓制能力提升。'},
+   '林安可':{team:'臺南獅子',title:'溫安可-溪武a第四棒',theme:'theme-lions-orange',desc:'力量 +11、打擊 +5；中心打線長打威脅提升。'},
+   '黃子鵬':{team:'高雄老鷹',title:'老虎',theme:'theme-eagles',desc:'控球 +8、變化 +7、韌性 +4；投球穩定性提升。'},
+   '吳念庭':{team:'高雄老鷹',title:'得點圈之鬼',theme:'theme-eagles',desc:'打擊 +7、選球 +5；得點圈情境打擊能力大幅提升。'},
+   '范國宸':{team:'臺北騎士',title:'力量人，我的超人',theme:'theme-knights',desc:'力量 +9、打擊 +4；長打威脅提升。'},
+   '李東洺':{team:'臺北騎士',title:'李東洺～',theme:'theme-knights',desc:'控球 +6、變化 +5、韌性 +4；投球穩定度提升。'},
+   '朱育賢':{team:'新北紅龍',title:'酒窩大砲',theme:'theme-dragons',desc:'力量 +11、打擊 +4；全壘打與長打形成率提升。'},
+   '張政禹':{team:'新北紅龍',title:'傳說中的德撲仔，笑死',theme:'theme-dragons',desc:'敏捷 +7、守備範圍 +7、接球 +5；中線守備能力提升。'},
+   '莊昕諺':{team:'桃園猴子',title:'莊77-2025年的熱身之神',theme:'theme-lamiko',desc:'控球 +6、球威 +5、體力 +4；先發穩定度提升。'},
+   '林泓育':{team:'桃園猴子',title:'小胖',theme:'theme-lamiko',desc:'打擊 +7、力量 +8、選球 +4；中心打線火力提升。'},
+   '許基宏':{team:'臺中大象',title:'黃金轟炸機',theme:'theme-brothers',desc:'力量 +12、打擊 +5；長打與全壘打威脅提升。'},
+   '宋晟睿':{team:'臺中大象',title:'外野草上飛-法拉睿',theme:'theme-brothers',desc:'速度 +10、守備範圍 +9、臂力 +7；外野機動性大幅提升。'},
+   '陳重羽':{team:'臺南獅子',title:'柴宇',theme:'theme-lions-orange',desc:'接球 +7、配球 +6、臂力 +6；捕手守備穩定度提升。'},
+   '林靖凱':{team:'臺南獅子',title:'陶靖凱-你別再受傷了…',theme:'theme-lions-orange',desc:'敏捷 +8、守備範圍 +8、接球 +6；中線守備能力提升。'},
+   '曾子祐':{team:'高雄老鷹',title:'yoyo',theme:'theme-eagles',desc:'打擊 +6、敏捷 +6、守備範圍 +5；攻守均衡提升。'},
+   '王柏融':{team:'高雄老鷹',title:'柏融大王-我不是小玉；安娜安娜？',theme:'theme-eagles',desc:'打擊 +9、力量 +7、選球 +4；中心打線威脅提升。'}
+  };
+  var e=m[n];if(!e)return;if(e.needJersey&&j!==e.needJersey)return;
+  state.team=e.team;state.easterEgg=e;
+  if(!state.legendDeclineBonusApplied){
+    state.declineAge=(state.declineAge||rollDeclineAge(state.playerType))+3;
+    state.legendDeclineBonusApplied=true;
+  }document.documentElement.classList.add(e.theme);
+  if(state.playerType==='hitter'){
+    if(n==='張育成'){state.attrs.power=clamp(state.attrs.power+6);state.attrs.arm=clamp(state.attrs.arm+6)}
+    if(n==='林智勝'){state.attrs.power=clamp(state.attrs.power+10);state.attrs.discipline=clamp(state.attrs.discipline+4)}
+    if(n==='彭政閔'){state.attrs.contact=clamp(state.attrs.contact+8);state.attrs.discipline=clamp(state.attrs.discipline+8)}
+    if(n==='陳傑憲'){state.attrs.contact=clamp(state.attrs.contact+9);state.attrs.speed=clamp(state.attrs.speed+5)}
+    if(n==='魔鷹')state.attrs.power=clamp(state.attrs.power+12);
+    if(n==='戴培峰'){state.attrs.catching=clamp(state.attrs.catching+7);state.attrs.arm=clamp(state.attrs.arm+7);state.attrs.calling=clamp(state.attrs.calling+6)}
+    if(n==='吉力吉撈鞏冠'){state.attrs.power=clamp(state.attrs.power+10);state.attrs.contact=clamp(state.attrs.contact+5)}
+    if(n==='郭天信'){state.attrs.range=clamp(state.attrs.range+9);state.attrs.catching=clamp(state.attrs.catching+8);state.attrs.speed=clamp(state.attrs.speed+5)}
+    if(n==='林立'){state.attrs.contact=clamp(state.attrs.contact+8);state.attrs.power=clamp(state.attrs.power+6);state.attrs.speed=clamp(state.attrs.speed+5)}
+    if(n==='陳晨威'){state.attrs.speed=clamp(state.attrs.speed+10);state.attrs.range=clamp(state.attrs.range+6)}
+    if(n==='江坤宇'){state.attrs.catching=clamp(state.attrs.catching+10);state.attrs.range=clamp(state.attrs.range+9);state.attrs.agility=clamp(state.attrs.agility+8)}
+    if(n==='岳東華'){state.attrs.power=clamp(state.attrs.power+6);state.attrs.range=clamp(state.attrs.range+5);state.attrs.arm=clamp(state.attrs.arm+5)}
+    if(n==='林安可'){state.attrs.power=clamp(state.attrs.power+11);state.attrs.contact=clamp(state.attrs.contact+5)}
+    if(n==='吳念庭'){state.attrs.contact=clamp(state.attrs.contact+7);state.attrs.discipline=clamp(state.attrs.discipline+5)}
+    if(n==='范國宸'){state.attrs.power=clamp(state.attrs.power+9);state.attrs.contact=clamp(state.attrs.contact+4)}
+    if(n==='朱育賢'){state.attrs.power=clamp(state.attrs.power+11);state.attrs.contact=clamp(state.attrs.contact+4)}
+    if(n==='張政禹'){state.attrs.agility=clamp(state.attrs.agility+7);state.attrs.range=clamp(state.attrs.range+7);state.attrs.catching=clamp(state.attrs.catching+5)}
+    if(n==='林泓育'){state.attrs.contact=clamp(state.attrs.contact+7);state.attrs.power=clamp(state.attrs.power+8);state.attrs.discipline=clamp(state.attrs.discipline+4)}
+    if(n==='許基宏'){state.attrs.power=clamp(state.attrs.power+12);state.attrs.contact=clamp(state.attrs.contact+5)}
+    if(n==='宋晟睿'){state.attrs.speed=clamp(state.attrs.speed+10);state.attrs.range=clamp(state.attrs.range+9);state.attrs.arm=clamp(state.attrs.arm+7)}
+    if(n==='陳重羽'){state.attrs.catching=clamp(state.attrs.catching+7);state.attrs.calling=clamp(state.attrs.calling+6);state.attrs.arm=clamp(state.attrs.arm+6)}
+    if(n==='林靖凱'){state.attrs.agility=clamp(state.attrs.agility+8);state.attrs.range=clamp(state.attrs.range+8);state.attrs.catching=clamp(state.attrs.catching+6)}
+    if(n==='曾子祐'){state.attrs.contact=clamp(state.attrs.contact+6);state.attrs.agility=clamp(state.attrs.agility+6);state.attrs.range=clamp(state.attrs.range+5)}
+    if(n==='王柏融'){state.attrs.contact=clamp(state.attrs.contact+9);state.attrs.power=clamp(state.attrs.power+7);state.attrs.discipline=clamp(state.attrs.discipline+4)}
+  }else{
+    if(n==='曾峻岳'){state.attrs.stuff=clamp(state.attrs.stuff+8);state.attrs.control=clamp(state.attrs.control+3)}
+    if(n==='黃平洋'){state.attrs.stamina=clamp(state.attrs.stamina+8);state.attrs.durability=clamp(state.attrs.durability+8)}
+    if(n==='徐若熙'){state.attrs.stuff=clamp(state.attrs.stuff+10);state.attrs.movement=clamp(state.attrs.movement+5)}
+    if(n==='陳冠宇'){state.attrs.control=clamp(state.attrs.control+7);state.attrs.movement=clamp(state.attrs.movement+6)}
+    if(n==='陳義信'){state.attrs.control=clamp(state.attrs.control+7);state.attrs.stuff=clamp(state.attrs.stuff+6);state.attrs.durability=clamp(state.attrs.durability+5)}
+    if(n==='林岳平'){state.attrs.stuff=clamp(state.attrs.stuff+7);state.attrs.durability=clamp(state.attrs.durability+7)}
+    if(n==='林詩翔'){state.attrs.stuff=clamp(state.attrs.stuff+7);state.attrs.control=clamp(state.attrs.control+5);state.attrs.durability=clamp(state.attrs.durability+5)}
+    if(n==='張奕'){state.attrs.control=clamp(state.attrs.control+6);state.attrs.durability=clamp(state.attrs.durability+5)}
+    if(n==='古林睿煬'){state.attrs.stuff=clamp(state.attrs.stuff+9);state.attrs.control=clamp(state.attrs.control+5);state.attrs.movement=clamp(state.attrs.movement+5)}
+    if(n==='黃子鵬'){state.attrs.control=clamp(state.attrs.control+8);state.attrs.movement=clamp(state.attrs.movement+7);state.attrs.durability=clamp(state.attrs.durability+4)}
+    if(n==='李東洺'){state.attrs.control=clamp(state.attrs.control+6);state.attrs.movement=clamp(state.attrs.movement+5);state.attrs.durability=clamp(state.attrs.durability+4)}
+    if(n==='莊昕諺'){state.attrs.control=clamp(state.attrs.control+6);state.attrs.stuff=clamp(state.attrs.stuff+5);state.attrs.stamina=clamp(state.attrs.stamina+4)}
+  }
+  grantAchievement(e.title,e.desc);
+  if(n==='林智勝')addLog('💙 彩蛋：林智勝加入桃園猴子，啟用 Lamiko 淺藍主視覺。');
+  else if(n==='林岳平')addLog('🦁 彩蛋：林岳平加入臺南獅子，啟用統一獅時期綠／橘／白主視覺。');
+  else addLog('🥚 彩蛋：'+n+' 強制加入 '+state.team+'，獲得「'+e.title+'」。');
+}
+function postSummary(){
+  var s=state.postSeason;
+  if(state.playerType==='hitter'){
+    var avg=s.ab?(s.h/s.ab).toFixed(3).replace(/^0/,''):'.000';
+    return s.g+'G / '+s.pa+' PA / AVG '+avg+' / '+s.hr+' HR / '+s.rbi+' RBI / '+s.sb+' SB';
+  }
+  var er=s.ip?((s.er*9)/s.ip).toFixed(2):'0.00';
+  return s.g+'G / '+s.gs+'GS / '+s.w+'-'+s.l+' / '+formatIP(s.ip)+' IP / ERA '+er+' / '+s.k+' K';
+}
+function bankPostseason(){
+  for(var k in state.postCareer)state.postCareer[k]+=(state.postSeason[k]||0);
+}
+function evaluateFMVP(){
+  if(!state.postseason||state.postseason.champion!==state.team)return;
+  var s=state.postSeason,score=state.playerType==='hitter'?(s.h*2+s.hr*5+s.rbi*2+s.sb):(s.ip*1.2+s.k*1.4+s.w*6-s.er*3);
+  if(score>=18){state.fmvpYears.push(state.year);state.awards.push({year:state.year,name:'🏆 台灣大賽 FMVP'});addLog('🌟 '+state.year+' 台灣大賽 FMVP：'+state.name)}
+}
+
+function hitterAttrs(type,arch,subtype){
+  var b={contact:58,power:58,discipline:58,speed:58,agility:58,range:58,catching:58,throwing:58,arm:58,calling:0,durability:60};
+
+  if(type==='catcher'){
+    b.speed=48;b.agility=55;b.calling=62;b.arm=62;b.catching=64;
+  }
+  if(type==='infielder'){
+    if(subtype==='middle'){
+      // 二壘／游擊：守備為主
+      b.agility=70;b.range=70;b.catching=66;b.throwing=64;b.arm=62;b.speed=59;b.power=53;
+    }else{
+      // 一壘／三壘：打擊為主
+      b.contact=62;b.power=66;b.discipline=60;b.agility=57;b.range=55;b.catching=60;b.arm=64;b.speed=50;
+    }
+  }
+  if(type==='outfielder'){
+    if(subtype==='left'){
+      // 左外野：打擊為主
+      b.contact=63;b.power=67;b.discipline=60;b.speed=58;b.range=55;b.catching=58;b.arm=55;
+    }else if(subtype==='center'){
+      // 中外野：守備範圍、接球為主
+      b.speed=70;b.range=74;b.catching=70;b.agility=63;b.power=54;b.arm=60;
+    }else{
+      // 右外野：敏捷、傳球、臂力為主
+      b.speed=63;b.range=63;b.catching=64;b.agility=70;b.throwing=72;b.arm=75;b.power=58;
+    }
+  }
+
+  if(arch==='contact'){b.contact+=12;b.discipline+=6}
+  else if(arch==='power'){b.power+=15;b.contact-=4}
+  else if(arch==='defense'){b.agility+=8;b.range+=8;b.catching+=8;b.throwing+=5}
+  else if(arch==='speed'){b.speed+=12;b.range+=5}
+  else {b.contact+=4;b.power+=4;b.discipline+=4}
+
+  for(var k in b)b[k]=clamp(b[k]);
+  return b
+}
+window.toggleFieldSubtype=function(){
+  var type=el('fieldType').value,sel=el('fieldSubtype'),wrap=el('fieldSubtypeWrap');
+  if(type==='catcher'){
+    wrap.className='hidden wide-mobile';sel.innerHTML='<option value="catcher">捕手</option>';return;
+  }
+  wrap.className='wide-mobile';
+  if(type==='infielder'){
+    sel.innerHTML='<option value="middle">中線守備｜二壘、游擊（守備為主）</option><option value="corner">邊線守備｜一壘、三壘（打擊為主）</option>';
+  }else{
+    sel.innerHTML='<option value="left">左外野｜打擊為主</option><option value="center">中外野｜守備範圍、接球為主</option><option value="right">右外野｜守備敏捷、傳球、臂力為主</option>';
+  }
+}
+window.toggleSetup=function(){
+  var hit=el('playerType').value==='hitter';
+  el('pitchHandWrap').className=hit?'hidden':'';
+  el('pitchArchWrap').className=hit?'hidden':'wide-mobile';
+  el('pitchRoleWrap').className=hit?'hidden':'wide-mobile';
+  el('fieldPosWrap').className=hit?'':'hidden';
+  el('batSideWrap').className=hit?'':'hidden';
+  el('hitArchWrap').className=hit?'wide-mobile':'hidden wide-mobile';
+  if(hit){toggleFieldSubtype()}else{el('fieldSubtypeWrap').className='hidden wide-mobile'}
+}
+function fieldPositionLabel(){
+  if(state.playerType!=='hitter')return'投手';
+  if(state.fieldType==='catcher')return'捕手';
+  if(state.fieldType==='infielder')return state.fieldSubtype==='middle'?'中線內野（二壘／游擊）':'邊線內野（一壘／三壘）';
+  if(state.fieldSubtype==='left')return'左外野';
+  if(state.fieldSubtype==='center')return'中外野';
+  return'右外野';
+}
+function currentFieldPosition(){
+  if(state.fieldType==='catcher')return'捕手';
+  if(state.fieldType==='outfielder'){
+    if(state.fieldSubtype==='left')return'左外野手';
+    if(state.fieldSubtype==='center')return'中外野手';
+    return'右外野手';
+  }
+  if(state.fieldSubtype==='middle'){
+    /* 中線內野依守備特性決定當前主要守位：範圍/敏捷偏游擊，否則二壘。 */
+    return (state.attrs.range+state.attrs.agility>=state.attrs.catching+state.attrs.throwing)?'游擊手':'二壘手';
+  }
+  /* 邊線內野依臂力/力量決定當前主要守位：臂力較強三壘，否則一壘。 */
+  return (state.attrs.arm+state.attrs.throwing>=state.attrs.power+state.attrs.catching)?'三壘手':'一壘手';
+}
+function hRoleTier(){
+  var a=state.attrs,s=(a.contact+a.power+a.discipline+a.catching+a.range)/5;
+  if(s>=73)return'starter1';if(s>=65)return'bench1';if(s>=58)return'starter2';return'develop2';
+}
+function hRole(){
+  var tier=hRoleTier(),pos=currentFieldPosition();
+  if(tier==='starter1')return'一軍先發'+pos;
+  if(tier==='bench1')return'一軍替補'+pos;
+  if(tier==='starter2')return'二軍先發'+pos;
+  return'二軍培養'+pos;
+}
+function hitterSummary(){
+  var s=state.hSeason,avg=s.ab?(s.h/s.ab).toFixed(3).replace(/^0/,''):'.000';
+  return s.g+'G / '+s.pa+' PA / AVG '+avg+' / '+s.hr+' HR / '+s.rbi+' RBI / '+s.sb+' SB';
+}
+function simulateHitterAppearance(){
+  if(!isHealthy()){return 0}
+  var a=state.attrs, tier=hRoleTier(), play=(tier==='starter1'?0.92:tier==='bench1'?0.62:tier==='starter2'?0.78:0.48);
+  if(Math.random()>play){state.fatigue=clamp(state.fatigue-rnd(1,3));return 0}
+  var s=state.hSeason;s.g++;
+  var pa=rnd(3,5);s.pa+=pa;
+  for(var i=0;i<pa;i++){
+    var walkP=clamp(0.045+(a.discipline-50)*0.0012,0.03,0.14);
+    if(Math.random()<walkP){s.bb++;continue}
+    s.ab++;
+    var hitP=clamp(0.205+(effectiveAttr('contact',false)-45)*0.0022+(effectiveAttr('discipline',false)-50)*0.00035+(hasAchievement('安打製造機')?.05:0)+(hasAchievement('恰恰')?.035:0)+(hasAchievement('四爺')?.04:0),0.18,0.46);
+    if(Math.random()<hitP){
+      s.h++;
+      var x=Math.random(),power=clamp((effectiveAttr('power',false)-45)/100,0.03,0.55)+(hasAchievement('怪力男')?.10:hasAchievement('力量人')?.03:0)+(hasAchievement('魔鷹')?.08:0)+(hasAchievement('大師兄')?.04:0)+(hasAchievement('部長')?.03:0);
+      if(x<power*.22){s.hr++;s.rbi+=rnd(1,3)}
+      else if(x<power*.58){s.doubles++;s.rbi+=Math.random()<.45?1:0}
+      else if(x<power*.66){s.triples++;s.rbi+=Math.random()<.5?1:0}
+      else s.rbi+=Math.random()<.25?1:0;
+    } else {
+      var kP=clamp(.27-(a.discipline-50)*.0022,0.08,.34);if(Math.random()<kP)s.so++;
+    }
+  }
+  if(Math.random()<clamp((effectiveAttr('speed',false)-45)*.006+(hasAchievement('飛毛腿')?.06:0),0,.40))s.sb++;
+  state.fatigue=clamp(state.fatigue+Math.round((rnd(4,9)-Math.floor((a.durability||60)/30))*(state.startSkill==='ironman'?.95:1)));
+  applyInjuryRisk();
+  var offensive=(s.h+s.hr*1.5+s.bb*.4)/(Math.max(1,s.pa));
+  return offensive>.42?2:offensive>.27?1:0;
+}
+
+function currentSeasonLine(){
+  return state.playerType==='hitter'?hitterSummary():summary();
+}
+function hitterAvg(s){return s.ab?s.h/s.ab:0}
+function generateAICandidates(){
+  var out=[];
+  for(var i=0;i<state.league.length;i++){
+    var tm=state.league[i];
+    for(var j=0;j<8;j++){
+      var age=rnd(20,36),q=tm.strength+rnd(-8,10);
+      if(state.playerType==='hitter'){
+        var pa=rnd(320,540);
+        var avg=clamp((.230+(q-45)*.0018+(Math.random()-.5)*.045),.185,.355);
+        var ab=Math.round(pa*.90),h=Math.round(ab*avg);
+        var hr=Math.max(0,Math.round((q-42)*.75+rnd(-8,14)));
+        var rbi=Math.max(15,Math.round(hr*2.2+rnd(15,55)));
+        var sb=Math.max(0,Math.round((64-q)*.35+rnd(0,20)));
+        var def=clamp(q+rnd(-15,18),35,95);
+        out.push({name:'AI球員'+(i+1)+'-'+(j+1),team:tm.name,age:age,pa:pa,ab:ab,h:h,avg:avg,hr:hr,rbi:rbi,sb:sb,def:def,
+          mvp:avg*260+hr*2.5+rbi*.35+sb*.25+def*.18});
+      }else{
+        var rolePick=Math.random();
+        var ip=rolePick<.72?rnd(90,190):rnd(35,85);
+        var era=clamp(5.20-(q-45)*.065+(Math.random()-.5)*1.55,1.65,6.20);
+        var w=Math.max(1,Math.round(ip/12+(q-50)*.08+rnd(-3,4)));
+        var k=Math.max(20,Math.round(ip*(.72+(q-45)*.009)+(Math.random()-.5)*35));
+        out.push({name:'AI投手'+(i+1)+'-'+(j+1),team:tm.name,age:age,ip:ip,era:era,w:w,k:k,
+          cy:(210-era*26)+w*3.2+k*.22+ip*.15,
+          mvp:(190-era*22)+w*2.8+k*.18+ip*.12});
+      }
+    }
+  }
+  return out;
+}
+function rankWithPlayer(list,key,dir,playerObj){
+  var all=list.slice();all.push(playerObj);
+  all.sort(function(a,b){return dir==='asc'?(a[key]-b[key]):(b[key]-a[key])});
+  return {rank:all.indexOf(playerObj)+1,top:all.slice(0,3)};
+}
+function fmtLeader(x,key){
+  if(!x)return '';
+  var v=x[key];
+  if(key==='avg'||key==='era')v=Number(v).toFixed(3).replace(/^0/,'');
+  return x.name+' '+v;
+}
+function evaluateSeasonAwards(){
+  if(state.seasonAwardsDone)return [];
+  var awards=[],ai=generateAICandidates(),champ=state.postseason&&state.postseason.champion===state.team;
+
+  if(state.playerType==='hitter'){
+    var s=state.hSeason,avg=hitterAvg(s);
+    var p={name:state.name,team:state.team,age:state.age,pa:s.pa,ab:s.ab,h:s.h,avg:avg,hr:s.hr,rbi:s.rbi,sb:s.sb,
+           def:(state.attrs.agility+state.attrs.range+state.attrs.catching+state.attrs.throwing+state.attrs.arm)/5,
+           mvp:avg*260+s.hr*2.5+s.rbi*.35+s.sb*.25+((state.attrs.agility+state.attrs.range+state.attrs.catching+state.attrs.throwing+state.attrs.arm)/5)*.18};
+    if(s.pa>=300){
+      var r=rankWithPlayer(ai,'avg','desc',p);if(r.rank===1)awards.push('🥇 打擊王');
+      r=rankWithPlayer(ai,'hr','desc',p);if(r.rank===1)awards.push('🥇 全壘打王');
+      r=rankWithPlayer(ai,'rbi','desc',p);if(r.rank===1)awards.push('🥇 打點王');
+      r=rankWithPlayer(ai,'sb','desc',p);if(r.rank===1)awards.push('🥇 盜壘王');
+      r=rankWithPlayer(ai,'def','desc',p);if(r.rank===1)awards.push('🧤 金手套');
+      r=rankWithPlayer(ai,'mvp','desc',p);if(r.rank===1)awards.push('👑 年度 MVP');
+    }
+    if(s.g>=70&&p.mvp>=ai.reduce(function(m,x){return Math.max(m,x.mvp)},0)*.80)awards.push('⭐ 明星賽');
+    if(state.career.seasons===0&&s.g>=55){
+      var rookies=ai.filter(function(x){return x.age<=23});
+      var rr=rankWithPlayer(rookies,'mvp','desc',p);
+      if(rr.rank===1)awards.push('🌟 新人王');
+    }
+  }else{
+    var ps=state.season,erNum=ps.ip?((ps.er*9)/ps.ip):99;
+    var pp={name:state.name,team:state.team,age:state.age,ip:ps.ip,era:erNum,w:ps.w,k:ps.k,
+            cy:(210-erNum*26)+ps.w*3.2+ps.k*.22+ps.ip*.15,
+            mvp:(190-erNum*22)+ps.w*2.8+ps.k*.18+ps.ip*.12};
+    if(ps.ip>=60){
+      var r2=rankWithPlayer(ai,'w','desc',pp);if(r2.rank===1)awards.push('🥇 勝投王');
+      r2=rankWithPlayer(ai,'era','asc',pp);if(r2.rank===1)awards.push('🥇 防禦率王');
+      r2=rankWithPlayer(ai,'k','desc',pp);if(r2.rank===1)awards.push('🥇 三振王');
+      r2=rankWithPlayer(ai,'cy','desc',pp);if(r2.rank===1)awards.push('🏆 年度最佳投手');
+      r2=rankWithPlayer(ai,'mvp','desc',pp);if(r2.rank===1)awards.push('👑 年度 MVP');
+    }
+    if(ps.g>=20&&pp.cy>=ai.reduce(function(m,x){return Math.max(m,x.cy)},0)*.78)awards.push('⭐ 明星賽');
+    if(state.career.seasons===0&&ps.ip>=60){
+      var rookp=ai.filter(function(x){return x.age<=23});
+      var rr2=rankWithPlayer(rookp,'cy','desc',pp);
+      if(rr2.rank===1)awards.push('🌟 新人王');
+    }
+  }
+
+  if(champ){
+    awards.push('🏆 台灣大賽總冠軍');
+    if(state.championshipYears.indexOf(state.year)<0)state.championshipYears.push(state.year);
+  }
+
+  for(var i=0;i<awards.length;i++)state.awards.push({year:state.year,name:awards[i]});
+  state.seasonAwardsDone=true;
+  return awards;
+}
+
+function seasonAdvancedSnapshot(){
+  if(state.playerType==='hitter'){
+    var s=state.hSeason,avg=s.ab?s.h/s.ab:0,obp=(s.ab+s.bb)?(s.h+s.bb)/(s.ab+s.bb):0;
+    var singles=Math.max(0,s.h-s.doubles-s.triples-s.hr),tb=singles+s.doubles*2+s.triples*3+s.hr*4;
+    var slg=s.ab?tb/s.ab:0,ops=obp+slg;
+    return {type:'hitter',avg:avg,obp:obp,slg:slg,ops:ops,hr:s.hr,rbi:s.rbi,sb:s.sb,pa:s.pa};
+  }
+  var p=state.season,era=p.ip?p.er*9/p.ip:0,whip=p.ip?(p.bb+p.h)/p.ip:0,k9=p.ip?p.k*9/p.ip:0,bb9=p.ip?p.bb*9/p.ip:0,kbb=p.bb?p.k/p.bb:p.k;
+  return {type:'pitcher',era:era,whip:whip,k9:k9,bb9:bb9,kbb:kbb,ip:p.ip,k:p.k,w:p.w,l:p.l};
+}
+function fmt3(v){return Number(v||0).toFixed(3).replace(/^0/,'')}
+function advancedHistoryHTML(){
+  if(!state.seasonHistory||!state.seasonHistory.length)return '<span class="muted">沒有球季資料。</span>';
+  var rows=state.seasonHistory.slice().sort(function(a,b){return a.year-b.year});
+  if(state.playerType==='hitter'){
+    return '<table class="advanced-table"><thead><tr><th>年度</th><th>AVG</th><th>OBP</th><th>SLG</th><th>OPS</th><th>HR</th><th>RBI</th><th>SB</th></tr></thead><tbody>'+
+      rows.map(function(x){var a=x.advanced||{};return '<tr><td>'+x.year+'</td><td>'+fmt3(a.avg)+'</td><td>'+fmt3(a.obp)+'</td><td>'+fmt3(a.slg)+'</td><td>'+Number(a.ops||0).toFixed(3)+'</td><td>'+(a.hr||0)+'</td><td>'+(a.rbi||0)+'</td><td>'+(a.sb||0)+'</td></tr>'}).join('')+'</tbody></table>';
+  }
+  return '<table class="advanced-table"><thead><tr><th>年度</th><th>ERA</th><th>WHIP</th><th>K/9</th><th>BB/9</th><th>K/BB</th><th>IP</th></tr></thead><tbody>'+
+    rows.map(function(x){var a=x.advanced||{};return '<tr><td>'+x.year+'</td><td>'+Number(a.era||0).toFixed(2)+'</td><td>'+Number(a.whip||0).toFixed(2)+'</td><td>'+Number(a.k9||0).toFixed(1)+'</td><td>'+Number(a.bb9||0).toFixed(1)+'</td><td>'+Number(a.kbb||0).toFixed(2)+'</td><td>'+formatIP(a.ip||0)+'</td></tr>'}).join('')+'</tbody></table>';
+}
+function saveSeasonHistory(){
+  if(state.seasonHistory.some(function(x){return x.year===state.year}))return;
+  var awards=evaluateSeasonAwards();
+  state.seasonHistory.push({year:state.year,line:currentSeasonLine(),awards:awards.slice(),champion:state.postseason?state.postseason.champion:null,advanced:seasonAdvancedSnapshot()});
+  addLog('📊 '+state.year+' 球季總結：'+currentSeasonLine());
+  if(awards.length)addLog('🏅 '+state.year+'：'+awards.join('、'));
+  else addLog('🏅 '+state.year+'：本季未獲獎項。');
+}
+function finalizePostseasonGame(pa,pb,aScore,bScore){
+  var p=state.postseason;
+  while(aScore===bScore){if(Math.random()<.5)aScore++;else bScore++}
+  if(aScore>bScore)p.wA++;else p.wB++;
+  addLog('⚾ 季後賽 '+pa+' '+aScore+':'+bScore+' '+pb+'（系列賽 '+p.wA+'-'+p.wB+'）');
+  if(p.wA>=p.target||p.wB>=p.target){
+    var winner=p.wA>=p.target?pa:pb;
+    if(p.stage==='challenge'){
+      addLog('🔥 '+winner+' 晉級台灣大賽。');
+      p.stage='final';p.a=p.seed1;p.b=winner;p.wA=0;p.wB=0;p.target=4;p.gameNo=0;p.starterSlot=rnd(1,4);updatePostOpponent();
+    }else{
+      p.champion=winner;
+      addLog('🏆 '+winner+' 奪得 '+state.year+' 台灣大賽總冠軍！');
+      evaluateFMVP();bankPostseason();finishYearAfterPostseason();
+    }
+  }
+}
+
+function bankSeason(){
+  if(!state||state.seasonBanked)return;
+  state.career.seasons++;if(state.leagueCareer&&state.leagueCareer[state.currentLeague])state.leagueCareer[state.currentLeague].seasons++;
+  if(state.playerType==='hitter'){
+    var s=state.hSeason,c=state.career;
+    ['g','pa','ab','h','doubles','triples','hr','rbi','bb','so','sb'].forEach(function(k){c[k]+=s[k]||0});
+  }else{
+    var p=state.season,c2=state.career;
+    ['g','gs','w','l','ip','er','k'].forEach(function(k){c2[k]+=p[k]||0});
+  }
+  state.seasonBanked=true;
+}
+function careerLine(){
+  var c=state.career;
+  if(state.playerType==='hitter'){
+    var avg=c.ab?(c.h/c.ab).toFixed(3).replace(/^0/,''):'.000';
+    return c.seasons+' 季｜'+c.g+' G｜'+c.pa+' PA｜AVG '+avg+'｜'+c.h+' H｜'+c.hr+' HR｜'+c.rbi+' RBI｜'+c.sb+' SB';
+  }
+  var er=c.ip?((c.er*9)/c.ip).toFixed(2):'0.00';
+  return c.seasons+' 季｜'+c.g+' G｜'+c.gs+' GS｜'+c.w+'-'+c.l+'｜'+formatIP(c.ip)+' IP｜ERA '+er+'｜'+c.k+' K';
+}
+
+window.startGame=function(){unlockAudio();sfx('click');safe(function(){var type=el('archetype').value,a=randomizeInitialAttrs(archetypeStats(type),'pitcher'),t=teams[rnd(0,teams.length-1)];state={year:2027,age:18,name:el('name').value||'Rookie',jersey:clamp(parseInt(el('jersey').value,10)||18,0,99),hand:el('hand').value,playerType:el('playerType').value,fieldType:el('fieldType').value,fieldSubtype:el('fieldSubtype').value||'catcher',batSide:el('batSide').value,team:t.name,attrs:a,training:6,trainingPlan:{},trainingOpen:true,fatigue:0,games:0,teamW:0,teamL:0,season:{g:0,gs:0,w:0,l:0,ip:0,er:0,k:0,bb:0,h:0},pitches:{'四縫線':{control:clamp(a.control+rnd(-5,5)),stuff:clamp(a.stuff+rnd(-4,6)),movement:null,velo:a.veloMax-rnd(2,5)},'滑球':{control:rnd(45,65),stuff:rnd(50,70),movement:type==='breaking'?rnd(68,80):rnd(50,68),velo:a.veloMax-rnd(10,15)},'變速球':{control:rnd(40,60),stuff:rnd(45,65),movement:rnd(48,70),velo:a.veloMax-rnd(15,22)}},league:[],log:[],pendingClutch:null,phase:'regular',postseason:null,injury:null,rotationSlot:rnd(0,4),career:{seasons:0,g:0,gs:0,w:0,l:0,ip:0,er:0,k:0,pa:0,ab:0,h:0,doubles:0,triples:0,hr:0,rbi:0,bb:0,so:0,sb:0},hSeason:{g:0,pa:0,ab:0,h:0,doubles:0,triples:0,hr:0,rbi:0,bb:0,so:0,sb:0},seasonHistory:[],awards:[],championshipYears:[],seasonAwardsDone:false,startSkill:el('startSkill').value,seasonMods:{},achievements:[],postSeason:{g:0,gs:0,w:0,l:0,ip:0,er:0,k:0,pa:0,ab:0,h:0,hr:0,rbi:0,bb:0,so:0,sb:0},postCareer:{g:0,gs:0,w:0,l:0,ip:0,er:0,k:0,pa:0,ab:0,h:0,hr:0,rbi:0,bb:0,so:0,sb:0},fmvpYears:[],forcedRetirement:false,easterEgg:null,declineAge:rollDeclineAge(el('playerType').value),legendDeclineBonusApplied:false,pitchRolePref:el('pitchRolePref').value,pendingEvent:null,pendingOffseason:null,contract:{yearsLeft:3,salary:360,team:t.name},careerEarnings:0,morale:50,tradeCount:0,international:{events:[],career:{g:0,pa:0,ab:0,h:0,hr:0,rbi:0,bb:0,so:0,sb:0,ip:0,er:0,k:0,bbp:0,hp:0},medals:[],awards:[]},hallOfFame:null,retirementReason:'',retirementStory:'',currentLeague:'CPBL',overseasHistory:[],leagueCareer:{CPBL:{seasons:0},NPB:{seasons:0},MLB:{seasons:0}},overseasPostseason:null,overseasChampionships:[]};if(state.playerType==='hitter'){state.attrs=randomizeInitialAttrs(hitterAttrs(state.fieldType,el('hitArchetype').value,state.fieldSubtype),'hitter');state.pitches={};state.hand=state.batSide;state.rotationSlot=0}
+state.seasonBanked=false;
+for(var i=0;i<teams.length;i++)state.league.push({name:teams[i].name,w:0,l:0,strength:teams[i].strength+rnd(-3,3)});applyEasterEgg();if(state.easterEgg&&state.playerType==='pitcher')addLog('✨ 彩蛋投手加成：使用巔峰期球種配置；球種控球／球威／變化的訓練連動機率約為一般球員的2倍。');applyAgePhase();checkAchievements();addLog('2027 選秀會：'+state.team+'選中了 '+state.name+'。你選擇披上 #'+state.jersey+'，職棒生涯正式開始。');if(state.playerType==='pitcher'){if(state.pitchRolePref==='starter')addLog('📋 生涯定位：你選擇挑戰先發輪值。');else if(state.pitchRolePref==='reliever')addLog('📋 生涯定位：你選擇從牛棚出發。');else addLog('🎲 生涯定位：聽天由命，球隊將依體力與整體能力安排先發或牛棚。');addLog('📋 先發採5人輪值，完整120場例行賽理論最多約24場先發；傷停會直接錯過輪值。');}
+else addLog('🧤 野手定位：'+fieldPositionLabel()+'，將依能力與角色決定先發／輪替出賽。');addLog('🏋️ 季初訓練開始：請在「生涯 / 新聞紀錄」中分配6點訓練。完成後才會進入球季。');addLog('🧬 每位球員的初始能力與生涯曲線都有個體差異；即使選擇完全相同，能力值與衰退起點也不會固定。');
+addLog('📊 一般投手約30～34歲、野手約33～37歲進入衰退期；彩蛋球星會再延後3年。進入衰退期後每年核心能力約下降13%～25%，評價過低可能被強制戰力外。');el('setup').className='panel hidden';el('game').className='';render()})}
+window.train=function(k){safe(function(){
+if(!state||!state.trainingOpen||state.training<=0)return;
+state.training--;
+state.trainingPlan[k]=(state.trainingPlan[k]||0)+1;
+if(state.training<=0){
+  var results=[];
+  for(var key in state.trainingPlan){
+    var count=state.trainingPlan[key];
+    var totalGain=0,linked=[];
+    for(var c=0;c<count;c++){
+      if(key==='veloMax'){
+        if(Math.random()<(state.easterEgg?.45:.30)){state.attrs.veloMax++;totalGain++;for(var n in state.pitches){var pv=state.pitches[n];if(n==='四縫線'&&Math.random()<(state.easterEgg?.82:.65))pv.velo++;else if(n!=='四縫線'&&Math.random()<(state.easterEgg?.32:.18))pv.velo++}}
+      }else{
+        var baseTrain=.68;
+        if(state.startSkill==='fastlearn')baseTrain=.82;
+        if(state.startSkill==='powergift'&&(key==='power'||key==='stuff'))baseTrain=.86;
+        if(state.startSkill==='commandgift'&&(key==='discipline'||key==='control'))baseTrain=.86;
+        if(state.startSkill==='defensegift'&&['agility','range','catching','throwing','arm','defense'].indexOf(key)>=0)baseTrain=.84;
+        if(state.startSkill==='speedgift'&&(key==='speed'||key==='agility'))baseTrain=.86;
+        var gain=Math.random()<baseTrain?1:0;if(Math.random()<.10)gain++;if(state.startSkill==='genius')gain*=2;
+        state.attrs[key]=clamp(state.attrs[key]+gain);totalGain+=gain;
+        for(var n2 in state.pitches){var p=state.pitches[n2];
+          if(key==='control'&&Math.random()<(state.easterEgg?.38:.18)){var pg1=state.easterEgg&&Math.random()<.20?2:1;p.control=clamp(p.control+pg1);linked.push(n2+'控球+'+pg1)}
+          if(key==='stuff'&&Math.random()<(state.easterEgg?.38:.18)){var pg2=state.easterEgg&&Math.random()<.20?2:1;p.stuff=clamp(p.stuff+pg2);linked.push(n2+'球威+'+pg2)}
+          if(key==='movement'&&p.movement!==null&&Math.random()<(state.easterEgg?.44:.22)){var pg3=state.easterEgg&&Math.random()<.20?2:1;p.movement=clamp(p.movement+pg3);linked.push(n2+'變化+'+pg3)}
+        }
+      }
+    }
+    results.push(label(key)+' ×'+count+' → '+(totalGain?('基礎能力 +'+totalGain):'無明顯提升')+(linked.length?'；球種連動 '+linked.join('、'):''));
+  }
+  state.trainingOpen=false;
+  state.fatigue=clamp(state.fatigue+rnd(4,8)-(state.startSkill==='workhorse'?3:0));
+  addLog('🏋️ '+state.year+' 季初訓練完成。\n'+results.join('\n'));
+  checkAchievements();addLog('⚾ 球季準備完成，現在可以開始模擬比賽。');
+}
+render()})}
+window.simulateGames=function(n){safe(function(){if(!state||state.pendingClutch||state.pendingEvent||state.pendingOffseason)return;if(state.trainingOpen){addLog('📋 請先完成本季6點季初訓練。');render();return;}if(state.phase==='complete'||state.phase==='retired'){render();return}for(var i=0;i<n;i++){if(state.phase==='regular'){if(state.games>=seasonGameLimit()){finishRegularSeason();i--;continue}state.games++;healOneGame();var impact=0;if(isHealthy())impact=(state.playerType==='hitter'?simulateHitterAppearance():simulatePlayerAppearance(false));playLeagueRound(impact);maybeClutch(false);if(state.games%20===0){seasonalEvent();addLog('球季進行到第 '+state.games+' 場，你目前 '+state.teamW+'-'+state.teamL+'；個人成績：'+(state.playerType==='hitter'?hitterSummary():summary()));}if(state.pendingClutch||state.pendingEvent)break;if(state.games>=seasonGameLimit())finishRegularSeason()}else if(state.phase==='postseason'){if(!simulatePostseasonGame())break;if(state.pendingClutch)break}else if(state.phase==='overseas_postseason'){simulateOverseasPostseasonStep();break}else break}render()})}
+window.resolveClutch=function(c){safe(function(){
+if(!state||!state.pendingClutch)return;
+var pc=state.pendingClutch,postGame=pc.postseasonGame||null;
+var success=false,bigSuccess=false,s=0,d='',rr=rnd(1,100);
+
+if(state.playerType==='hitter'){
+  var a=state.attrs;
+  if(c==='inside'){s=a.contact*.42+a.power*.32+a.discipline*.18;d='鎖定內角'}
+  else if(c==='outside'){s=a.contact*.48+a.discipline*.30+a.power*.12;d='鎖定外角'}
+  else{s=a.contact*.40+a.power*.38+a.discipline*.16;d='鎖定中央'}
+  s-=Math.max(0,state.fatigue-60)*.30;if(state.startSkill==='clutch')s+=8;
+  if(pc.playoff){state.postSeason.pa++;state.postSeason.ab++;}else{state.hSeason.pa++;state.hSeason.ab++;}
+  if(rr<Math.min(80,s)){
+    success=true;if(pc.playoff)state.postSeason.h++;else state.hSeason.h++;
+    if(c==='middle'&&Math.random()<.32){
+      bigSuccess=true;if(pc.playoff){state.postSeason.hr++;state.postSeason.rbi+=rnd(1,3)}else{state.hSeason.hr++;state.hSeason.rbi+=rnd(1,3)};
+      addLog('💥 關鍵打席：你'+d+'，轟出關鍵全壘打！');
+    }else{
+      if(pc.playoff)state.postSeason.rbi+=rnd(0,2);else state.hSeason.rbi+=rnd(0,2);
+      addLog('🔥 關鍵打席：你'+d+'，敲出關鍵安打！');
+    }
+  }else if(rr<Math.min(93,s+14)){
+    addLog('⚾ 關鍵打席：你'+d+'，球打得很強，但被守備接殺。');
+  }else{
+    if(pc.playoff)state.postSeason.so++;else state.hSeason.so++;addLog('❌ 關鍵打席：你'+d+'，遭到三振。');
+  }
+}else{
+  var a2=state.attrs;
+  if(c==='high'){s=a2.stuff*.45+a2.control*.25+(a2.veloMax-140)*1.5;d='高角度速球'}
+  else if(c==='challenge'){s=a2.stuff*.38+a2.control*.38+(a2.veloMax-140);d='直球對決'}
+  else{s=a2.movement*.55+a2.control*.28;d='引誘球'}
+  s-=Math.max(0,state.fatigue-60)*.35;if(state.startSkill==='clutch')s+=8;
+  if(rr<Math.min(82,s)){success=true;bigSuccess=true;if(pc.playoff)state.postSeason.k++;else state.season.k++;addLog('🔥 關鍵時刻：你選擇'+d+'，STRIKE THREE！')}
+  else if(rr<Math.min(94,s+15)){success=true;addLog('🔥 關鍵時刻：你選擇'+d+'，製造出局。')}
+  else{if(pc.playoff)state.postSeason.er+=rnd(1,3);else state.season.er+=rnd(1,3);addLog('💥 關鍵時刻：你選擇'+d+'，失投遭到長打。')}
+}
+
+state.pendingClutch=null;el('clutch').className='card hidden';
+
+if(postGame){
+  var ownIsA=state.team===postGame.pa;
+  if(state.playerType==='hitter'){
+    if(success){if(ownIsA)postGame.aScore+=bigSuccess?2:1;else postGame.bScore+=bigSuccess?2:1}
+    else{if(ownIsA)postGame.bScore+=1;else postGame.aScore+=1}
+  }else{
+    if(success){if(ownIsA&&postGame.aScore<=postGame.bScore)postGame.aScore=postGame.bScore+1;
+                if(!ownIsA&&postGame.bScore<=postGame.aScore)postGame.bScore=postGame.aScore+1;}
+    else{if(ownIsA)postGame.bScore+=1;else postGame.aScore+=1}
+  }
+  finalizePostseasonGame(postGame.pa,postGame.pb,postGame.aScore,postGame.bScore);
+}
+render()
+})}
+window.restWeek=function(){safe(function(){if(!state||state.pendingClutch||state.pendingEvent)return;if(state.trainingOpen){addLog('📋 請先完成本季6點季初訓練。');render();return;}var games=5;addLog('🛌 主動休息一週，球隊賽程仍繼續。');for(var i=0;i<games;i++){if(state.phase==='regular'&&state.games<seasonGameLimit()){state.games++;healOneGame();state.fatigue=clamp(state.fatigue-rnd(3,6));playLeagueRound(0)}else if(state.phase==='postseason'){healOneGame();state.fatigue=clamp(state.fatigue-rnd(3,6));simulatePostseasonGame()}else if(state.phase==='overseas_postseason'){simulateOverseasPostseasonStep()}if(state.games>=seasonGameLimit()&&state.phase==='regular')finishRegularSeason()}render()})}
+
+
+function leagueLabel(){return state.currentLeague==='MLB'?'美職':state.currentLeague==='NPB'?'日職':'台灣職棒'}
+function overseasEligibility(){
+  var e=clubEvaluation(),age=state.age,score=e.score;
+  if(age<22||age>31)return {npb:0,mlb:0};
+  var awardBoost=Math.min(12,(state.awards||[]).filter(function(x){return x.year===state.year}).length*2);
+  var intlBoost=0;
+  if(state.international&&state.international.events){
+    var ev=state.international.events.find(function(x){return x.year===state.year});
+    if(ev){intlBoost=ev.place===1?8:ev.place<=3?5:3;if(ev.awards&&ev.awards.length)intlBoost+=4}
+  }
+  var npb=Math.max(0,Math.min(.72,(score-58)*.025+awardBoost/100+intlBoost/100));
+  var mlb=Math.max(0,Math.min(.42,(score-68)*.018+awardBoost/140+intlBoost/120));
+  return {npb:npb,mlb:mlb};
+}
+function overseasDifficultyMultiplier(){
+  if(state.currentLeague==='MLB')return state.playerType==='hitter'?.90:.92;
+  if(state.currentLeague==='NPB')return state.playerType==='hitter'?.95:.96;
+  return 1;
+}
+function applyOverseasPerformanceModifier(){
+  var m=overseasDifficultyMultiplier();
+  return m;
+}
+function maybeOverseasOffer(){
+  if(state.pendingOffseason||state.currentLeague!=='CPBL')return false;
+  var q=overseasEligibility(),roll=Math.random(),league=null;
+  if(roll<q.mlb)league='MLB';
+  else if(Math.random()<q.npb)league='NPB';
+  if(!league)return false;
+  var pool=league==='MLB'?mlbTeams:npbTeams,dest=pool[rnd(0,pool.length-1)];
+  var e=clubEvaluation(),salary=league==='MLB'?rnd(1800,6500)+e.score*55:rnd(900,3200)+e.score*35;
+  salary=Math.round(salary/10)*10;
+  var years=e.grade==='S'?rnd(3,5):e.grade==='A'?rnd(2,4):rnd(1,3);
+  state.pendingOffseason={type:'overseas',league:league,dest:dest,salary:salary,years:years};
+  showOffseasonChoice('✈️ 旅外邀約',
+    '<b>'+dest+'</b> 向你提出 '+years+' 年合約。<br>年薪 '+formatTWDWan(salary)+'<br><span class="muted">'+
+    (league==='MLB'?'美職實戰難度最高，成績會受到額外壓制。':'日職強度高於台灣職棒，旅外後成績會受到一定修正。')+'</span>',
+    [{label:'接受旅外挑戰',action:"resolveOffseason('overseasAccept')"},{label:'留在台灣',action:"resolveOffseason('overseasReject')"}]);
+  return true;
+}
+function overseasReturnOffer(){
+  if(state.currentLeague==='CPBL')return false;
+  if(state.contract&&state.contract.yearsLeft>0)return false;
+  var cp=teams[rnd(0,teams.length-1)].name;
+  state.pendingOffseason={type:'return',dest:cp,salary:contractValue(),years:rnd(1,3)};
+  showOffseasonChoice('🏠 返台邀約',
+    '海外合約到期。<b>'+cp+'</b> 願意提供 '+state.pendingOffseason.years+' 年合約，年薪 '+formatTWDWan(state.pendingOffseason.salary)+'。<br><span class="muted">你也可以嘗試繼續留在海外。</span>',
+    [{label:'返台加盟',action:"resolveOffseason('returnTaiwan')"},{label:'繼續旅外',action:"resolveOffseason('stayOverseas')"}]);
+  return true;
+}
+function contractValue(){
+  var e=clubEvaluation(),base=180+e.score*11;
+  if(e.grade==='S')base+=900;else if(e.grade==='A')base+=500;else if(e.grade==='B')base+=220;
+  return Math.max(180,Math.round((base+rnd(-120,180))/10)*10);
+}
+function randomOtherTeam(){
+  var a=teams.filter(function(x){return x.name!==state.team});return a[rnd(0,a.length-1)].name;
+}
+function processOffseason(){
+  if(!state.contract)state.contract={yearsLeft:1,salary:360,team:state.team};
+  state.careerEarnings=(state.careerEarnings||0)+(state.contract.salary||0);
+  state.contract.yearsLeft=Math.max(0,(state.contract.yearsLeft||0)-1);
+
+  if(state.currentLeague!=='CPBL'){
+    if(state.contract.yearsLeft===0&&overseasReturnOffer())return true;
+    /* 海外合約仍有效時，不會誤觸台灣職棒交易／FA系統。 */
+    return false;
+  }
+
+  /* 台灣職棒休賽季：先判斷旅外邀約，再處理國內交易與FA。 */
+  if(maybeOverseasOffer())return true;
+
+  var evalNow=clubEvaluation(),tradeChance=evalNow.grade==='S'?.04:evalNow.grade==='A'?.07:evalNow.grade==='B'?.11:.18;
+  if(state.contract.yearsLeft>0&&Math.random()<tradeChance){
+    var dest=randomOtherTeam();
+    state.pendingOffseason={type:'trade',dest:dest};
+    showOffseasonChoice('🔁 球隊交易通知','球團通知你：你已被交易至 <b>'+dest+'</b>。<br><span class="muted">原合約剩餘 '+state.contract.yearsLeft+' 年將由新球隊承接。</span>',
+      [{label:'接受交易，向新球隊報到',action:"resolveOffseason('trade')"}]);
+    return true;
+  }
+  if(state.contract.yearsLeft===0){
+    var salary=contractValue(),years=evalNow.grade==='S'||evalNow.grade==='A'?rnd(3,5):evalNow.grade==='B'?rnd(2,4):rnd(1,2);
+    var other=randomOtherTeam(),otherSalary=Math.round(salary*(1+rnd(3,18)/100)/10)*10;
+    state.pendingOffseason={type:'contract',staySalary:salary,stayYears:years,other:other,otherSalary:otherSalary,otherYears:Math.max(1,years+rnd(-1,1))};
+    showOffseasonChoice('📝 合約到期','你的合約已到期。<br><b>'+state.team+'</b>：'+years+' 年／年薪 '+formatTWDWan(salary)+'<br><b>'+other+'</b>：'+state.pendingOffseason.otherYears+' 年／年薪 '+formatTWDWan(otherSalary),
+      [{label:'與原球隊續約',action:"resolveOffseason('stay')"},{label:'接受其他球隊合約',action:"resolveOffseason('leave')"}]);
+    return true;
+  }
+  return false;
+}
+function showOffseasonChoice(title,html,buttons){
+  el('offseasonChoice').className='card';el('offseasonChoiceText').innerHTML='<b>'+title+'</b><br>'+html;
+  el('offseasonChoiceButtons').innerHTML=buttons.map(function(b){return '<button onclick="'+b.action+'">'+b.label+'</button>'}).join('');
+}
+window.resolveOffseason=function(choice){safe(function(){
+  var p=state.pendingOffseason;if(!p)return;
+  if(p.type==='overseas'){
+    if(choice==='overseasAccept'){
+      var oldTeam=state.team;state.currentLeague=p.league;state.team=p.dest;state.contract={yearsLeft:p.years,salary:p.salary,team:p.dest};
+      state.overseasHistory.push({year:state.year,league:p.league,team:p.dest,action:'旅外加盟'});
+      addLog('✈️ 旅外：你離開 '+oldTeam+'，加盟 '+p.dest+'，開始 '+leagueLabel()+' 生涯。');
+    }else{
+      addLog('🏠 你婉拒旅外邀約，決定繼續留在台灣職棒。');
+    }
+    state.pendingOffseason=null;el('offseasonChoice').className='card hidden';startNextSeason();render();return;
+  }
+  if(p.type==='return'){
+    if(choice==='returnTaiwan'){
+      var oldOver=state.team;state.currentLeague='CPBL';state.team=p.dest;state.contract={yearsLeft:p.years,salary:p.salary,team:p.dest};
+      state.overseasHistory.push({year:state.year,league:'CPBL',team:p.dest,action:'返台'});
+      addLog('🏠 返台：你離開 '+oldOver+'，加盟 '+p.dest+'。');
+    }else{
+      var pool=state.currentLeague==='MLB'?mlbTeams:npbTeams,dest=pool[rnd(0,pool.length-1)];
+      state.team=dest;state.contract={yearsLeft:rnd(1,3),salary:Math.round((p.salary*rnd(120,190)/100)/10)*10,team:dest};
+      state.overseasHistory.push({year:state.year,league:state.currentLeague,team:dest,action:'海外續留'});
+      addLog('🌏 你選擇繼續旅外，與 '+dest+' 簽下新合約。');
+    }
+    state.pendingOffseason=null;el('offseasonChoice').className='card hidden';startNextSeason();render();return;
+  }
+  if(p.type==='trade'){
+    var old=state.team;state.team=p.dest;state.contract.team=state.team;state.tradeCount=(state.tradeCount||0)+1;
+    addLog('🔁 休賽季交易：'+old+' 將你交易到 '+state.team+'。原合約由新球隊承接。');
+  }else if(choice==='stay'){
+    state.contract={yearsLeft:p.stayYears,salary:p.staySalary,team:state.team};
+    addLog('📝 續約完成：'+state.team+'｜'+p.stayYears+' 年合約｜年薪 '+p.staySalary+' 萬。');
+  }else{
+    var old2=state.team;state.team=p.other;state.contract={yearsLeft:p.otherYears,salary:p.otherSalary,team:state.team};
+    addLog('🧳 自由球員轉隊：你離開 '+old2+'，與 '+state.team+' 簽下 '+p.otherYears+' 年合約｜年薪 '+p.otherSalary+' 萬。');
+  }
+  state.pendingOffseason=null;el('offseasonChoice').className='card hidden';startNextSeason();render();
+})}
+window.continueCareer=function(){safe(function(){if(!state||state.phase!=='complete')return;saveSeasonHistory();bankSeason();addLog('⚾ 你決定繼續職棒生涯：進入休賽季。');if(!processOffseason())startNextSeason();render()})}
+
+function careerAwardCount(match){
+  return (state.awards||[]).filter(function(x){return x.name.indexOf(match)>=0}).length;
+}
+function calculateHallOfFame(){
+  var c=state.career,score=0,reasons=[];
+  score+=Math.min(24,(state.career.seasons||0)*1.1);
+  score+=Math.min(20,(state.championshipYears||[]).length*4);
+  score+=Math.min(10,(state.fmvpYears||[]).length*5);
+  score+=Math.min(20,careerAwardCount('年度 MVP')*8+careerAwardCount('年度最佳投手')*6+careerAwardCount('打擊王')*3+careerAwardCount('全壘打王')*3+careerAwardCount('防禦率王')*3+careerAwardCount('三振王')*2);
+  if(state.playerType==='hitter'){
+    score+=Math.min(20,(c.h||0)/120+(c.hr||0)/35+(c.rbi||0)/180);
+    if((c.h||0)>=2000)reasons.push('2000安等級的長期累積');
+    if((c.hr||0)>=300)reasons.push('生涯長打成就');
+  }else{
+    score+=Math.min(20,(c.w||0)/10+(c.k||0)/180+(c.ip||0)/300);
+    if((c.w||0)>=150)reasons.push('150勝等級的先發成就');
+    if((c.k||0)>=1800)reasons.push('高奪三振累積');
+  }
+  var I=state.international||{medals:[],awards:[]};
+  (I.medals||[]).forEach(function(m){score+=m.medal.indexOf('金牌')>=0?8:m.medal.indexOf('銀牌')>=0?5:3});
+  score+=Math.min(10,(I.awards||[]).length*4);
+  score=Math.max(0,Math.min(100,score));
+  var yesBase=32+score*.62,yes=Math.max(5,Math.min(96,Math.round(yesBase+rnd(-7,7))));
+  var total=100,inducted=yes>=75;
+  return {score:Math.round(score),yes:yes,no:100-yes,total:total,inducted:inducted,reasons:reasons};
+}
+function buildRetirementStory(){
+  var c=state.career,e=clubEvaluation(),champ=(state.championshipYears||[]).length,mvp=careerAwardCount('年度 MVP'),intl=(state.international&&state.international.medals)||[];
+  var level=e.score>=75?'聯盟招牌球星':e.score>=65?'長年主力':e.score>=55?'可靠的職業球員':'努力在職棒留下足跡的球員';
+  var intros=[
+    state.name+'最後把球衣摺好放進置物櫃。'+state.career.seasons+'個球季的日子沒有全部變成紀錄，但每一季都留下了屬於自己的痕跡。',
+    '退休記者會結束後，'+state.name+'再次走回空蕩的球場。看台已經熄燈，職棒生涯卻像一場很長的比賽，直到此刻才真正結束。',
+    state.name+'沒有替最後一天安排太多儀式。球棒、手套與背號被收進箱子裡，剩下的是'+state.career.seasons+'季累積下來的故事。'
+  ];
+  var legacy=level+'';
+  if(champ>=3)legacy+='，也是多次站上冠軍舞台的重要成員';
+  else if(champ)legacy+='，並曾經隨隊登上聯盟最高點';
+  if(mvp)legacy+='；'+mvp+'座年度MVP讓他的巔峰期被球迷長久記住';
+  if(intl.length)legacy+='；披上國家隊球衣的經歷則成為生涯另一段珍貴記憶';
+  var after;
+  if(state.playerType==='pitcher'&&((c.k||0)>=1500||(c.w||0)>=120))after='退休後，他偶爾受邀擔任投手教練與球評，把多年累積的配球與比賽閱讀傳給下一代。';
+  else if(state.playerType==='hitter'&&((c.h||0)>=1500||(c.hr||0)>=200))after='退休後，他持續出現在球場周邊，參與青棒指導與球團活動，成為年輕打者會主動請教的前輩。';
+  else if(state.tradeCount>=2)after='退休後，他選擇過比較安靜的生活。因為待過不同球隊，偶爾回到任何一座熟悉的球場，都還會有人記得他的名字。';
+  else after='退休後，他逐漸離開聚光燈，偶爾回到球場參加OB活動。對他而言，能完整走過一段職業生涯，本身就是最珍貴的回憶。';
+  return intros[rnd(0,intros.length-1)]+'<br><br><b>生涯定位：</b>'+legacy+'。<br><br>'+after;
+}
+function hallOfFameHTML(){
+  var h=state.hallOfFame;if(!h)return '<span class="muted">尚未進行投票。</span>';
+  return '<div class="hof-box"><div class="big" style="font-size:22px">'+(h.inducted?'🏛️ 成功入選名人堂':'🗳️ 未達名人堂門檻')+'</div>'+
+    '<div style="margin-top:8px">贊成票 <b>'+h.yes+'%</b>｜反對票 '+h.no+'%</div>'+
+    '<div class="small muted" style="margin-top:6px">系統生涯評分 '+h.score+'/100；入選門檻為 75% 贊成票。國際賽名次與國際個人獎項均納入評價。</div></div>';
+}
+function beginRetirement(reason,kind){
+  state.retirementReason=reason||'球員決定結束自己的職業生涯。';state.retirementKind=kind||'voluntary';
+  state.phase='retiring';state.trainingOpen=false;state.pendingClutch=null;state.pendingEvent=null;
+  el('game').className='hidden';el('careerSummary').className='hidden';el('retirementNotice').className='';
+  el('retirementReasonText').innerHTML='<b>退役原因</b><br>'+state.retirementReason+'<br><br><span class="muted">確認後將公布名人堂投票與完整生涯結算。</span>';
+}
+window.confirmRetirement=function(){safe(function(){
+  if(!state||state.phase!=='retiring')return;
+  if(!state.hallOfFame)state.hallOfFame=calculateHallOfFame();
+  if(!state.retirementStory)state.retirementStory=buildRetirementStory();
+  state.phase='retired';el('retirementNotice').className='hidden';showCareerSummary();
+})}
+window.retireCareer=function(){safe(function(){if(!state||state.phase!=='complete')return;saveSeasonHistory();bankSeason();addLog('🧢 '+state.name+' 在 '+state.year+' 球季結束後決定退休。');addLog('📖 生涯最終成績：'+careerLine());beginRetirement('你主動做出決定：在 '+state.age+' 歲、完成 '+state.career.seasons+' 個球季後，選擇結束職業球員生涯。','voluntary')})}
+function startNextSeason(){state.year++;state.age++;applyAgePhase();checkAchievements();state.games=0;state.teamW=0;state.teamL=0;state.training=6;state.trainingPlan={};state.trainingOpen=true;state.fatigue=Math.max(0,state.fatigue-55);state.season={g:0,gs:0,w:0,l:0,ip:0,er:0,k:0,bb:0,h:0};state.hSeason={g:0,pa:0,ab:0,h:0,doubles:0,triples:0,hr:0,rbi:0,bb:0,so:0,sb:0};state.postSeason={g:0,gs:0,w:0,l:0,ip:0,er:0,k:0,pa:0,ab:0,h:0,hr:0,rbi:0,bb:0,so:0,sb:0};state.seasonMods={};state.seasonBanked=false;state.seasonAwardsDone=false;state.phase='regular';state.postseason=null;state.overseasPostseason=null;state.injury=null;state.rotationSlot=rnd(0,4);if(state.currentLeague==='CPBL'){for(var i=0;i<state.league.length;i++){state.league[i].w=0;state.league[i].l=0}}var retireReason=forcedRetirementReason();if(retireReason){state.forcedRetirement=true;addLog('📉 '+retireReason+' '+state.name+' 的職業生涯走到終點。');beginRetirement(retireReason,'forced');return;}addLog('📅 '+state.year+' 球季開始，你現在 '+state.age+' 歲。');addLog('🏋️ 新球季季初訓練開始：請分配6點訓練。')}
+
+
+function formatTWDWan(v){
+  v=Math.max(0,Number(v)||0);
+  if(v>=10000){
+    var yi=v/10000;
+    var s=(Math.round(yi*10)/10).toFixed(1).replace(/\.0$/,'');
+    return s+'億臺幣';
+  }
+  return Math.round(v)+'萬臺幣';
+}
+function showCareerSummary(){
+  el('game').className='hidden';el('careerSummary').className='';
+  var _ct=el('careerTitle');
+  _ct.className='big legend-career-title';
+  if(state.easterEgg){
+    _ct.innerHTML='<span>#'+state.jersey+' '+state.name+'</span><span class="legend-career-badge">🥚 '+String(state.easterEgg.title).replace(/<[^>]*>/g,'')+'</span>';
+    el('careerSummaryCard').classList.add('legend-summary');
+  }else{
+    _ct.textContent='#'+state.jersey+' '+state.name;
+    el('careerSummaryCard').classList.remove('legend-summary');
+  }
+  var pos=state.playerType==='hitter'?fieldPositionLabel():'投手';
+  el('careerMeta').textContent=state.team+'｜'+pos+'｜'+state.age+'歲退役｜'+state.career.seasons+'個球季';
+  el('careerMeta').textContent+='｜生涯薪資 '+formatTWDWan(state.careerEarnings||0)+'｜交易 '+(state.tradeCount||0)+' 次';
+  if(state.overseasHistory&&state.overseasHistory.length){
+    var lg=state.leagueCareer||{};el('careerMeta').textContent+='｜旅外 '+((lg.NPB&&lg.NPB.seasons)||0)+'季(日職)／'+((lg.MLB&&lg.MLB.seasons)||0)+'季(美職)';
+  }
+  var c=state.career,h='';
+  if(state.playerType==='hitter'){
+    var avg=c.ab?(c.h/c.ab).toFixed(3).replace(/^0/,''):'.000';
+    [['出賽',c.g+' G'],['打席',c.pa+' PA'],['打擊率',avg],['安打',c.h],['全壘打',c.hr],['打點',c.rbi],['盜壘',c.sb],['保送 / 三振',c.bb+' / '+c.so]].forEach(function(x){h+='<div class="stat"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>'});
+  }else{
+    var er=c.ip?((c.er*9)/c.ip).toFixed(2):'0.00';
+    [['登板',c.g+' G'],['先發',c.gs+' GS'],['勝敗',c.w+'-'+c.l],['投球局數',formatIP(c.ip)+' IP'],['生涯 ERA',er],['奪三振',c.k+' K']].forEach(function(x){h+='<div class="stat"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>'});
+  }
+  if(state.postCareer.g||state.postCareer.pa){h+='<div class="hr"></div><div class="small muted">季後賽生涯</div><div style="margin-top:6px">'+(state.playerType==='hitter'?(state.postCareer.g+' G｜'+state.postCareer.pa+' PA｜'+state.postCareer.hr+' HR｜'+state.postCareer.rbi+' RBI'):(state.postCareer.g+' G｜'+formatIP(state.postCareer.ip)+' IP｜'+state.postCareer.k+' K'))+'</div>';}el('careerStats').innerHTML=h;
+  var ah='<div class="award-count-row"><span class="award-name">🏆 總冠軍</span><b>'+state.championshipYears.length+' 次</b></div>'+
+           '<div class="award-count-row"><span class="award-name">🌟 台灣大賽 FMVP</span><b>'+state.fmvpYears.length+' 次</b></div>';
+  if(state.championshipYears.length)ah+='<div class="small muted" style="margin:7px 0">冠軍年份：'+state.championshipYears.join('、')+'</div>';
+  if(state.fmvpYears.length)ah+='<div class="small muted" style="margin:7px 0 12px">FMVP 年份：'+state.fmvpYears.join('、')+'</div>';
+  if(state.overseasChampionships&&state.overseasChampionships.length){
+    ah+='<div class="award-section-title">旅外冠軍</div>';
+    state.overseasChampionships.forEach(function(x){ah+='<div class="award-count-row"><span class="award-name">'+x.year+' '+x.name+'</span><b>'+x.league+'</b></div>'});
+  }
+  if(!state.championshipYears.length)ah+='<div class="small muted" style="margin:7px 0 12px">生涯未獲得台灣大賽冠軍。</div>';
+
+  if(state.awards.length){
+    var counts={},byYear={};
+    state.awards.forEach(function(x){
+      if(!byYear[x.year])byYear[x.year]=[];
+      if(byYear[x.year].indexOf(x.name)<0)byYear[x.year].push(x.name);
+      counts[x.name]=(counts[x.name]||0)+1;
+    });
+    var names=Object.keys(counts);
+    if(names.length){
+      ah+='<div class="award-section-title">獎項總計</div>';
+      names.forEach(function(n){
+        ah+='<div class="award-count-row"><span class="award-name">'+n+'</span><b>'+counts[n]+' 次</b></div>';
+      });
+      ah+='<div class="award-section-title">年度經歷</div>';
+    }
+    Object.keys(byYear).sort(function(a,b){return Number(a)-Number(b)}).forEach(function(y){
+      ah+='<div class="award-year-card"><div class="award-year-label">'+y+'</div><div class="award-chip-wrap">'+
+          byYear[y].map(function(n){return '<span class="award-chip">'+n+'</span>'}).join('')+
+          '</div></div>';
+    });
+  }else{
+    ah+='<div class="muted" style="margin-top:12px">生涯沒有獲得年度個人獎項。</div>';
+  }
+  el('careerAwards').innerHTML=ah;
+  el('internationalSummary').innerHTML=internationalSummaryHTML();
+  el('advancedCareerStats').innerHTML=advancedHistoryHTML();
+  el('hallOfFameResult').innerHTML=hallOfFameHTML();
+  el('careerStory').innerHTML=state.retirementStory||buildRetirementStory();
+  el('careerQuote').innerHTML='<b>退役原因：</b>'+String(state.retirementReason||'完成職業生涯。')+'<br><span class="muted">這就是 '+state.name+' 的台灣職棒生涯。</span>';
+}
+function shareTheme(){
+  var base={accent:'#f59e0b',accent2:'#fde047'};
+  if(state&&state.easterEgg){
+    var map={
+      'theme-knights':{accent:'#38bdf8',accent2:'#bae6fd'},
+      'theme-dragons':{accent:'#ef4444',accent2:'#fecaca'},
+      'theme-lamiko':{accent:'#7dd3fc',accent2:'#e0f2fe'},
+      'theme-brothers':{accent:'#facc15',accent2:'#fef08a'},
+      'theme-lions-green':{accent:'#f97316',accent2:'#fed7aa'},
+      'theme-lions-orange':{accent:'#fb923c',accent2:'#ffedd5'},
+      'theme-eagles':{accent:'#4ade80',accent2:'#dcfce7'}
+    };
+    base=map[state.easterEgg.theme]||base;
+  }
+  return {accent:base.accent,accent2:base.accent2,bg:'#0f172a',card:'#1e293b',sub:'#162033',line:'#334155',text:'#f8fafc',muted:'#94a3b8'};
+}
+function cleanShareText(s){return String(s||'').replace(/<[^>]*>/g,'').replace(/&[^;]+;/g,'').trim()}
+function shareRoundRect(ctx,x,y,w,h,r,fill,stroke,lw){
+  var rr=Math.min(r,w/2,h/2);
+  ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath();
+  ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke()}
+}
+function shareFont(ctx,size,weight){ctx.font=(weight||700)+' '+size+'px -apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif'}
+function shareFitText(ctx,txt,maxWidth,startSize,minSize,weight){
+  var size=startSize;shareFont(ctx,size,weight);
+  while(size>minSize&&ctx.measureText(txt).width>maxWidth){size-=2;shareFont(ctx,size,weight)}
+  return size;
+}
+function drawCareerShareImage(){
+  var canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;
+  var ctx=canvas.getContext('2d'),p=shareTheme(),c=state.career;
+  ctx.fillStyle=p.bg;ctx.fillRect(0,0,1080,1350);ctx.textBaseline='top';
+
+  shareFont(ctx,30,800);ctx.fillStyle=p.accent2;ctx.fillText('⚾ 台灣職棒球員人生模擬器',54,42);
+  shareRoundRect(ctx,54,100,972,1185,28,p.card,p.accent,3);
+
+  shareFont(ctx,22,800);ctx.fillStyle=p.muted;ctx.fillText(state.easterEgg?'LEGEND CAREER COMPLETE':'CAREER COMPLETE',96,145);
+  var title='#'+state.jersey+' '+state.name;shareFitText(ctx,title,800,58,38,900);ctx.fillStyle=p.text;ctx.fillText(title,96,186);
+
+  var metaY=275;
+  if(state.easterEgg){
+    var badge='🥚 '+cleanShareText(state.easterEgg.title);shareFitText(ctx,badge,800,24,16,800);
+    var badgeW=Math.min(840,ctx.measureText(badge).width+38);
+    shareRoundRect(ctx,96,260,badgeW,48,24,p.bg,p.accent,1);ctx.fillStyle=p.accent2;ctx.fillText(badge,115,269);metaY=330;
+  }
+
+  var pos=state.playerType==='hitter'?fieldPositionLabel():'投手';
+  shareFont(ctx,25,500);ctx.fillStyle=p.muted;ctx.fillText(state.team+'｜'+pos+'｜'+state.age+'歲退役｜'+state.career.seasons+'個球季',96,metaY);
+
+  var y=metaY+60;ctx.strokeStyle=p.line;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(96,y);ctx.lineTo(984,y);ctx.stroke();y+=30;
+  shareFont(ctx,31,800);ctx.fillStyle=p.text;ctx.fillText('⚾ 生涯成績',96,y);y+=55;
+
+  var stats;
+  if(state.playerType==='hitter'){
+    var avg=c.ab?(c.h/c.ab).toFixed(3).replace(/^0/,''):'.000';
+    stats=[['出賽',c.g+' G'],['打席',c.pa+' PA'],['打擊率',avg],['安打',String(c.h)],['全壘打',c.hr+' HR'],['打點',String(c.rbi)]];
+  }else{
+    var era=c.ip?((c.er*9)/c.ip).toFixed(2):'0.00';
+    stats=[['登板',c.g+' G'],['先發',c.gs+' GS'],['勝敗',c.w+'-'+c.l],['投球局數',formatIP(c.ip)+' IP'],['生涯 ERA',era],['奪三振',c.k+' K']];
+  }
+  var bw=280,bh=105,gap=18;
+  stats.forEach(function(s,i){
+    var col=i%3,row=Math.floor(i/3),x=96+col*(bw+gap),yy=y+row*(bh+gap);
+    shareRoundRect(ctx,x,yy,bw,bh,18,p.sub,p.line,1);
+    shareFont(ctx,18,500);ctx.fillStyle=p.muted;ctx.fillText(s[0],x+18,yy+15);
+    shareFitText(ctx,s[1],bw-36,30,20,800);ctx.fillStyle=p.text;ctx.fillText(s[1],x+18,yy+47);
+  });
+  y+=bh*2+gap+40;
+
+  ctx.strokeStyle=p.line;ctx.beginPath();ctx.moveTo(96,y);ctx.lineTo(984,y);ctx.stroke();y+=28;
+  shareFont(ctx,31,800);ctx.fillStyle=p.text;ctx.fillText('🏆 生涯榮譽',96,y);y+=52;
+
+  var ac={};state.awards.forEach(function(a){var k=cleanShareText(a.name);ac[k]=(ac[k]||0)+1});
+  var rows=[['🏆 總冠軍',state.championshipYears.length+' 次'],['🌟 台灣大賽 FMVP',state.fmvpYears.length+' 次']];
+  Object.keys(ac).slice(0,4).forEach(function(k){rows.push([k,ac[k]+' 次'])});
+  rows.slice(0,6).forEach(function(r){
+    shareFitText(ctx,r[0],690,22,15,600);ctx.fillStyle=p.text;ctx.fillText(r[0],96,y);
+    shareFont(ctx,22,800);ctx.textAlign='right';ctx.fillText(r[1],984,y);ctx.textAlign='left';
+    ctx.strokeStyle=p.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(96,y+40);ctx.lineTo(984,y+40);ctx.stroke();y+=51;
+  });
+
+  if(state.easterEgg&&y<1140){
+    y+=8;shareRoundRect(ctx,96,y,888,84,18,p.sub,p.accent,1);
+    shareFont(ctx,18,800);ctx.fillStyle=p.accent2;ctx.fillText('彩蛋球星',116,y+13);
+    var legend=cleanShareText(state.easterEgg.title);shareFitText(ctx,legend,820,25,16,900);ctx.fillText(legend,116,y+39);y+=104;
+  }
+
+  y=Math.min(y+10,1190);ctx.strokeStyle=p.line;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(96,y);ctx.lineTo(984,y);ctx.stroke();
+  shareFont(ctx,20,600);ctx.fillStyle=p.text;ctx.fillText('從選秀會披上 #'+state.jersey+' 的那一天，到最後一次收起球具。',96,y+25);
+  ctx.fillStyle=p.muted;ctx.fillText('這就是 '+state.name+' 的台灣職棒生涯。',96,y+58);
+
+  shareFont(ctx,16,700);ctx.fillStyle='#64748b';ctx.fillText('作者：LeoTsai　v0.6.4',54,1310);
+  return canvas;
+}
+window.shareCareer=function(){safe(function(){
+  var canvas=drawCareerShareImage();
+  canvas.toBlob(function(blob){
+    if(!blob){alert('圖片產生失敗，請再試一次。');return}
+    var file=new File([blob],'baseball-career-'+state.name+'.png',{type:'image/png'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({title:state.name+' 的職棒生涯',files:[file]}).catch(function(){});
+    }else{
+      var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='baseball-career-'+state.name+'.png';
+      document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},1500);
+      alert('已產生生涯結算圖片。');
+    }
+  },'image/png');
+})}
+
+function render(){if(!state)return;el('pName').textContent=state.name+'｜'+state.hand;el('pJersey').textContent='#'+state.jersey;el('pTeam').textContent=state.team;if(el('pLeague'))el('pLeague').textContent=leagueLabel();if(el('contractStatus'))el('contractStatus').textContent=state.contract?('剩 '+state.contract.yearsLeft+' 年｜年薪 '+formatTWDWan(state.contract.salary)):'新人合約';el('pAgeYear').textContent=state.age+'歲｜'+state.year;el('role').textContent=state.phase==='retired'?'已退役':(state.playerType==='hitter'?hRole():(role()+(state.pitchRolePref==='auto'?'｜聽天由命':state.pitchRolePref==='starter'?'｜先發志願':'｜牛棚志願')));el('careerPhase').textContent=careerPhaseName(state.age);var _ev=clubEvaluation();el('clubEval').textContent=_ev.grade+'｜'+_ev.score+'｜'+_ev.label;el('skillName').textContent=skillLabel(state.startSkill);el('tp').textContent=state.training;el('record').textContent=state.teamW+'-'+state.teamL+'（'+state.games+'/'+seasonGameLimit()+'）';el('seasonLine').textContent=state.playerType==='hitter'?hitterSummary():summary();el('fatigue').textContent=state.fatigue+'%';el('fatigue').className='big '+(state.fatigue>=85?'bad':state.fatigue>=65?'':'ok');el('health').textContent=state.injury?(state.injury.seasonEnding?'賽季報銷':state.injury.name+'｜剩 '+state.injury.gamesLeft+' 場'):'健康';el('health').className='big '+(state.injury?'bad':'ok');var ks=state.playerType==='hitter'?['contact','power','discipline','speed','agility','range','catching','throwing','arm']:['control','movement','stuff','stamina','durability','defense'],h='';
+if(state.playerType==='hitter'&&state.fieldType==='catcher')ks.push('calling');
+for(var i=0;i<ks.length;i++)h+='<div class="stat"><span>'+label(ks[i])+'</span><b>'+state.attrs[ks[i]]+'</b></div>';
+if(state.playerType==='pitcher')h+='<div class="stat"><span>最快球速</span><b>'+state.attrs.veloMax+' km/h</b></div>';
+el('achievementBadges').innerHTML=(state.achievements.length?'<div class="small muted" style="margin-bottom:6px">長按稱號或初始技能可查看效果</div>':'')+state.achievements.map(function(a){return '<span class="badge" data-ach="'+a.name.replace(/"/g,'&quot;')+'">'+a.name+'</span>'}).join('');el('baseStats').innerHTML=h;h='';
+if(state.playerType==='pitcher'){for(var n in state.pitches){var p=state.pitches[n];h+='<p><b>'+n+'</b><br><span class="muted">控球 '+p.control+'｜球威 '+p.stuff+(p.movement===null?'':'｜變化 '+p.movement)+'｜'+p.velo+' km/h</span></p>'}}else h='<span class="muted">野手模式不使用球種數據。</span>';
+el('pitchStats').innerHTML=h;h='';
+for(i=0;i<ks.length;i++)h+='<button onclick="train(\''+ks[i]+'\')" '+(!state.trainingOpen||state.training<=0?'disabled':'')+'>'+label(ks[i])+'</button>';
+if(state.playerType==='pitcher')h+='<button onclick="train(\'veloMax\')" '+(!state.trainingOpen||state.training<=0?'disabled':'')+'>球速</button>';
+el('trainingButtons').innerHTML=h;el('seasonTraining').className=state.trainingOpen?'card':'card hidden';el('seasonSim').className=(!state.trainingOpen&&(state.phase==='regular'||state.phase==='postseason'||state.phase==='overseas_postseason'))?'card':'card hidden';
+var _ospo=state.phase==='overseas_postseason';
+if(el('sim1Btn')){el('sim1Btn').textContent=_ospo?'⚾ 進行下一輪季後賽':'模擬 1 場';}
+if(el('sim5Btn'))el('sim5Btn').className=_ospo?'hidden':'';
+if(el('sim20Btn'))el('sim20Btn').className=_ospo?'hidden':'';
+if(el('restBtn'))el('restBtn').className=_ospo?'hidden':'alt';var plan=[];for(var pk in state.trainingPlan)plan.push(label(pk)+'×'+state.trainingPlan[pk]);el('trainingPlan').textContent=plan.length?'目前分配：'+plan.join('、'):'尚未分配訓練點。';var sorted=sortedLeague();h='';for(i=0;i<sorted.length;i++){var gp=sorted[i].w+sorted[i].l,pct=gp?(sorted[i].w/gp).toFixed(3).replace(/^0/,''):'.000';h+='<div class="stat"><span>'+(i+1)+'. '+sorted[i].name+'</span><b>'+sorted[i].w+'-'+sorted[i].l+' <span class="muted">('+pct+')</span></b></div>'}var ph='';if(state.phase==='regular')ph=state.currentLeague==='CPBL'?'例行賽尚未結束。前3名晉級季後賽；第2、3名先打3戰2勝挑戰賽，勝者再與第1名打7戰4勝台灣大賽。':leagueLabel()+'旅外球季進行中；目前版本旅外生涯以例行賽成績、個人獎項與合約為主。';else if(state.phase==='overseas_postseason'&&state.overseasPostseason){
+  var oq=state.overseasPostseason;
+  var stageName=oq.league==='NPB'?(oq.stage==='climax1'?'Climax Series 第一階段':oq.stage==='climaxFinal'?'Climax Series Final':'日本一'):(oq.stage==='wildcard'?'Wild Card Series':oq.stage==='division'?'Division Series':oq.stage==='leagueChamp'?'League Championship Series':'World Series');
+  ph=leagueLabel()+'季後賽｜<b>'+stageName+'</b>';
+}else if(state.postseason){var q=state.postseason;ph=(q.stage==='challenge'?'季後挑戰賽（3戰2勝）':'台灣大賽（7戰4勝）')+'<br><b>'+q.a+' '+q.wA+'－'+q.wB+' '+q.b+'</b>'+(q.champion?'<br>🏆 冠軍：'+q.champion:'')}else if(state.phase==='retired')ph='🏁 職棒生涯已結束。';else ph='本季已結束，請到「生涯 / 新聞紀錄」決定繼續生涯或選擇退役。';el('postseason').innerHTML=ph;el('postseasonStats').textContent=(state.postSeason.g||state.postSeason.pa)?postSummary():'尚無季後賽出賽。';el('seasonDecision').className=state.phase==='complete'?'card':'card hidden';el('log').textContent=state.log.slice().reverse().join('\n');if(state.pendingClutch){var c=state.pendingClutch;
+if(state.playerType==='hitter')el('clutchButtons').innerHTML='<button onclick="resolveClutch(\'inside\')">內角</button><button onclick="resolveClutch(\'outside\')">外角</button><button onclick="resolveClutch(\'middle\')">中央</button>';
+else el('clutchButtons').innerHTML='<button onclick="resolveClutch(\'high\')">HIGH FASTBALL<br><span class="small">高角度速球</span></button><button onclick="resolveClutch(\'challenge\')">CHALLENGE<br><span class="small">直球對決</span></button><button onclick="resolveClutch(\'chase\')">CHASE PITCH<br><span class="small">引誘球</span></button>';
+el('clutchText').innerHTML='<p><b>'+(c.playoff?'季後賽｜':'')+state.team+' vs '+c.opp+'</b></p>'+(c.seriesText?'<p class="muted">'+c.seriesText+'</p>':'')+'<p>'+c.inning+'局｜'+c.outs+'出局｜'+c.runner+'有人｜比分 '+c.score+'</p>'}bindTooltipUI()}
+window.onerror=function(msg){el('errorText').textContent=String(msg);el('errorBox').className='card'};
+toggleFieldSubtype();el('jsWarning').className='card hidden';el('jsReady').className='card';
+})();
+</script>
+</body>
+</html>
